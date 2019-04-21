@@ -2,7 +2,11 @@ html:
    sites:
       - https://dni-naslediya.ru/calendar/object/kryshi-bashni-i-truby-fabriki-eynem/
       - https://dni-naslediya.ru/calendar/object/bashni-truby-i-pivo-badaevskogo-pivzavoda/
-      - https://dni-naslediya.ru/calendar/object/sretenskiy-monastyr-xix-v/
+      - https://dni-naslediya.ru/calendar/object/kryshi-bashni-i-truby-golutvinskoy-manufaktury/
+      - https://dni-naslediya.ru/calendar/object/kryshi-bashni-i-truby-manufaktury-tsindelya/
+      - https://dni-naslediya.ru/calendar/object/kryshi-bashni-i-truby-manufaktury-zhiro/
+      - https://dni-naslediya.ru/calendar/object/promyshlennost-vokrug-serpukhovskoy-zastavy/
+      - https://dni-naslediya.ru/calendar/object/fabrika-bolshevik/
 
 spring:
    mail:

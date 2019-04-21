@@ -28,7 +28,7 @@ public class MailService {
     public void checkSite(String uri, String code) {
         if(!register.containsKey(uri)) {
             register.put(uri, SiteStates.ADDED);
-            log.debug("Site {} has added to register", uri);
+            log.info("Site {} has added to register", uri);
         }
 
         if(code.contains(">Регистрация<") && register.get(uri) != SiteStates.REG_OPENED) {
