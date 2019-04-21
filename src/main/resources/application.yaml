@@ -1,0 +1,19 @@
+html:
+   sites:
+      - https://dni-naslediya.ru/calendar/object/kryshi-bashni-i-truby-fabriki-eynem/
+      - https://dni-naslediya.ru/calendar/object/bashni-truby-i-pivo-badaevskogo-pivzavoda/
+      - https://dni-naslediya.ru/calendar/object/sretenskiy-monastyr-xix-v/
+
+spring:
+   mail:
+      host: smtp.gmail.com
+      port: 465
+      username: iogann1978@gmail.com
+      password: Hoffnung1978
+      properties.mail.smtp:
+         auth: true
+         starttls:
+            enable: true
+            required: true
+         ssl.enable: true
+      test-connection: true
