@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class MailService {
     private JavaMailSender sender;
+    private static final String phrase = ">Регистрация<";
 
     private Map<String, SiteStates> register = new ConcurrentHashMap<>();
 
@@ -31,14 +32,14 @@ public class MailService {
             log.info("Site {} has added to register", uri);
         }
 
-        if(code.contains(">Регистрация<") && register.get(uri) != SiteStates.REG_OPENED) {
+        if(code.contains(phrase) && register.get(uri) != SiteStates.REG_OPENED) {
             log.info("Registration for site {} is open!", uri);
             sendMessage("Registration has opened!", String.format("Registration for site %s is open!", uri));
             register.put(uri, SiteStates.REG_OPENED);
             return;
         }
 
-        if(!code.contains(">Регистрация<") && register.get(uri) != SiteStates.REG_CLOSED) {
+        if(!code.contains(phrase) && register.get(uri) != SiteStates.REG_CLOSED) {
             register.put(uri, SiteStates.REG_CLOSED);
             return;
         }
