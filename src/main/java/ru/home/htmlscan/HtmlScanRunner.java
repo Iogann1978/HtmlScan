@@ -5,6 +5,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.home.htmlscan.config.HtmlScanProperties;
+import ru.home.htmlscan.service.HtmlService;
+import ru.home.htmlscan.service.MailService;
 
 @Component
 @Slf4j

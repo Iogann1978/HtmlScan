@@ -1,4 +1,4 @@
-package ru.home.htmlscan;
+package ru.home.htmlscan.service;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -7,6 +7,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import ru.home.htmlscan.model.SiteStates;
 
 import javax.mail.MessagingException;
 import java.util.Map;

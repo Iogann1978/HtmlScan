@@ -1,4 +1,4 @@
-package ru.home.htmlscan;
+package ru.home.htmlscan.config;
 
 import lombok.val;
 import org.springframework.context.annotation.Bean;

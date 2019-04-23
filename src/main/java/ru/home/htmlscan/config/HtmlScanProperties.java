@@ -1,4 +1,4 @@
-package ru.home.htmlscan;
+package ru.home.htmlscan.config;
 
 import java.util.ArrayList;
 import java.util.List;
