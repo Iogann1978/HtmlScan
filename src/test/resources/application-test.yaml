@@ -3,6 +3,8 @@ html:
       - https://dni-naslediya.ru/calendar/object/kryshi-bashni-i-truby-fabriki-eynem/
 
 spring:
+   profiles: test
+
    mail:
       host: smtp.gmail.com
       port: 465
