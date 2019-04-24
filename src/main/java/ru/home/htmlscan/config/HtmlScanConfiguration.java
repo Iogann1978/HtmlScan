@@ -28,7 +28,6 @@ public class HtmlScanConfiguration {
         taskExecutor.setMaxPoolSize(maxPoolSize);
         taskExecutor.setQueueCapacity(queueCapacity);
         taskExecutor.afterPropertiesSet();
-        taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }
 
@@ -39,7 +38,6 @@ public class HtmlScanConfiguration {
         taskExecutor.setCorePoolSize(corePoolSize);
         taskExecutor.setMaxPoolSize(maxPoolSize);
         taskExecutor.setQueueCapacity(queueCapacity);
-        taskExecutor.afterPropertiesSet();
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }
