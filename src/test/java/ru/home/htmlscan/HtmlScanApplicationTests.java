@@ -14,6 +14,7 @@ import ru.home.htmlscan.service.MailService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -46,9 +47,15 @@ public class HtmlScanApplicationTests {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		try {
+			TimeUnit.SECONDS.sleep(10L);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
-	@Test
+	//@Test
 	public void mailSendTest() {
 		mailService.sendMessage("Test", "Test");
 	}
