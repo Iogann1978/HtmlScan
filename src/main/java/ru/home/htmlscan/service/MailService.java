@@ -8,7 +8,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import ru.home.htmlscan.model.SiteStates;
+import ru.home.htmlscan.model.SiteItem;
+import ru.home.htmlscan.model.SiteState;
 
 import javax.mail.MessagingException;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class MailService {
     private static final String phrase = ">Регистрация<";
 
     @Getter
-    private Map<String, SiteStates> register = new ConcurrentHashMap<>();
+    private Map<String, SiteItem> register = new ConcurrentHashMap<>();
 
     @Autowired
     public MailService(JavaMailSender sender) {
@@ -31,19 +32,30 @@ public class MailService {
     @Async("mailExecutor")
     public void checkSite(String uri, String code) {
         if(!register.containsKey(uri)) {
-            register.put(uri, SiteStates.ADDED);
+            val item = SiteItem.builder()
+                    .attemps(0)
+                    .sended(0)
+                    .state(SiteState.ADDED)
+                    .build();
+            register.put(uri, item);
             log.info("Site {} has added to register", uri);
         }
 
-        if(code.contains(phrase) && register.get(uri) != SiteStates.REG_OPENED) {
+        val item = register.get(uri);
+        if(code.contains(phrase) && item.getState() != SiteState.REG_OPENED) {
             log.info("Registration for site {} is open!", uri);
+            item.setAttemps(item.getAttemps() + 1);
+            register.put(uri, item);
             sendMessage("Registration has opened!", String.format("Registration for site %s is open!", uri));
-            register.put(uri, SiteStates.REG_OPENED);
+            item.setSended(item.getSended() + 1);
+            item.setState(SiteState.REG_OPENED);
+            register.put(uri, item);
             return;
         }
 
-        if(!code.contains(phrase) && register.get(uri) != SiteStates.REG_CLOSED) {
-            register.put(uri, SiteStates.REG_CLOSED);
+        if(!code.contains(phrase) && item.getState() != SiteState.REG_CLOSED) {
+            item.setState(SiteState.REG_CLOSED);
+            register.put(uri, item);
             return;
         }
     }

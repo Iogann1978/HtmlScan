@@ -32,7 +32,9 @@ public class HtmlController {
     @GetMapping("/list")
     public List<String> getList() {
         return mailService.getRegister().entrySet().stream().
-                map(e -> "uri=" + e.getKey() + " state=" + e.getValue()).collect(Collectors.toList());
+                map(e -> "uri=" + e.getKey() + ", state=" + e.getValue().getState() +
+                ", attempts=" + e.getValue().getAttemps() +
+                ", sended=" + e.getValue().getSended()).collect(Collectors.toList());
     }
 
     @GetMapping("/tasks")
