@@ -48,4 +48,8 @@ public class HtmlScanApplicationTests {
 		}
 	}
 
+	@Test
+	public void mailSendTest() {
+		mailService.sendMessage("Test", "Test");
+	}
 }

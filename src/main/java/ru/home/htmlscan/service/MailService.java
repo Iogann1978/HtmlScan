@@ -46,7 +46,7 @@ public class MailService {
         }
     }
 
-    private void sendMessage(String subject, String text) {
+    public void sendMessage(String subject, String text) {
         val message = sender.createMimeMessage();
         val helper = new MimeMessageHelper(message);
         try {
