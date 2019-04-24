@@ -13,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 @EnableAsync
 @EnableScheduling
 public class HtmlScanConfiguration {
+    private final static int corePoolSize = 10, maxPoolSize = 10, queueCapacity = 600;
+
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
@@ -22,9 +24,9 @@ public class HtmlScanConfiguration {
     public TaskExecutor htmlExecutor() {
         val taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setThreadNamePrefix("html-");
-        taskExecutor.setCorePoolSize(3);
-        taskExecutor.setMaxPoolSize(3);
-        taskExecutor.setQueueCapacity(600);
+        taskExecutor.setCorePoolSize(corePoolSize);
+        taskExecutor.setMaxPoolSize(maxPoolSize);
+        taskExecutor.setQueueCapacity(queueCapacity);
         taskExecutor.afterPropertiesSet();
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
@@ -34,9 +36,9 @@ public class HtmlScanConfiguration {
     public TaskExecutor mailExecutor() {
         val taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setThreadNamePrefix("mail-");
-        taskExecutor.setCorePoolSize(3);
-        taskExecutor.setMaxPoolSize(3);
-        taskExecutor.setQueueCapacity(600);
+        taskExecutor.setCorePoolSize(corePoolSize);
+        taskExecutor.setMaxPoolSize(maxPoolSize);
+        taskExecutor.setQueueCapacity(queueCapacity);
         taskExecutor.afterPropertiesSet();
         taskExecutor.afterPropertiesSet();
         return taskExecutor;

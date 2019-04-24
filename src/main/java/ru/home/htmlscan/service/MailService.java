@@ -1,5 +1,6 @@
 package ru.home.htmlscan.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ public class MailService {
     private JavaMailSender sender;
     private static final String phrase = ">Регистрация<";
 
+    @Getter
     private Map<String, SiteStates> register = new ConcurrentHashMap<>();
 
     @Autowired
