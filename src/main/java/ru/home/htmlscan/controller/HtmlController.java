@@ -8,6 +8,7 @@ import ru.home.htmlscan.service.MailService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("htmlscan")
@@ -23,9 +24,8 @@ public class HtmlController {
 
     @GetMapping("/list")
     public List<String> getList() {
-        val list = new ArrayList<String>();
-        mailService.getRegister().entrySet().stream().forEach(e -> list.add("uti=" + e.getKey() + " state=" + e.getValue()));
-        return list;
+        return mailService.getRegister().entrySet().stream().
+                map(e -> "uri=" + e.getKey() + " state=" + e.getValue()).collect(Collectors.toList());
     }
 
     @PostMapping("/mailcheck")
