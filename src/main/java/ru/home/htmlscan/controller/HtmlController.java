@@ -47,6 +47,7 @@ public class HtmlController {
         sb.append("active count=" + mailExecutor.getActiveCount());
         sb.append("\n");
         sb.append("pool size =" + mailExecutor.getPoolSize());
+        sb.append("\n");
         return sb.toString();
     }
 
