@@ -14,14 +14,18 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.home.htmlscan.config.HtmlScanProperties;
+import ru.home.htmlscan.model.SiteItem;
+import ru.home.htmlscan.model.SiteState;
 import ru.home.htmlscan.service.MailService;
 
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -80,5 +84,28 @@ public class HtmlScanApplicationTests {
 	//@Test
 	public void mailSendTest() {
 		mailService.sendMessage("Test", "Test");
+	}
+
+	@Test
+	public void mapTest() {
+		String key = "http://test/ru";
+		val map = new ConcurrentHashMap<String, SiteItem>();
+		val item1 = SiteItem.builder()
+				.attemps(0)
+				.sended(0)
+				.visits(0L)
+				.state(SiteState.REG_CLOSED)
+				.build();
+		map.put(key, item1);
+		val item2 = map.get(key);
+		item2.setAttemps(item2.getAttemps() + 1);
+		item2.setSended(item2.getSended() + 1);
+		item2.setVisits(item2.getVisits() + 1);
+		item2.setState(SiteState.REG_OPENED);
+		val item3 = map.get(key);
+		assertEquals(item2.getAttemps(), item3.getAttemps());
+		assertEquals(item2.getSended(), item3.getSended());
+		assertEquals(item2.getVisits(), item3.getVisits());
+		assertEquals(item2.getState(), item3.getState());
 	}
 }

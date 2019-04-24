@@ -35,6 +35,7 @@ public class MailService {
             val item = SiteItem.builder()
                     .attemps(0)
                     .sended(0)
+                    .visits(0L)
                     .state(SiteState.ADDED)
                     .build();
             register.put(uri, item);
@@ -42,20 +43,18 @@ public class MailService {
         }
 
         val item = register.get(uri);
+        item.setVisits(item.getVisits() + 1L);
         if(code.contains(phrase) && item.getState() != SiteState.REG_OPENED) {
             log.info("Registration for site {} is open!", uri);
             item.setAttemps(item.getAttemps() + 1);
-            register.put(uri, item);
             sendMessage("Registration has opened!", String.format("Registration for site %s is open!", uri));
             item.setSended(item.getSended() + 1);
             item.setState(SiteState.REG_OPENED);
-            register.put(uri, item);
             return;
         }
 
         if(!code.contains(phrase) && item.getState() != SiteState.REG_CLOSED) {
             item.setState(SiteState.REG_CLOSED);
-            register.put(uri, item);
             return;
         }
     }

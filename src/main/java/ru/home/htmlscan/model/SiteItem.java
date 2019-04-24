@@ -8,4 +8,5 @@ import lombok.Data;
 public class SiteItem {
     private SiteState state;
     private int attemps, sended;
+    private long visits;
 }
