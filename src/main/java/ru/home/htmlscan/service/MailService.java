@@ -14,12 +14,14 @@ import ru.home.htmlscan.model.SiteState;
 import javax.mail.MessagingException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Slf4j
 public class MailService {
     private JavaMailSender sender;
     private static final String phrase = ">Регистрация<";
+    private AtomicInteger count = new AtomicInteger(0);
 
     @Getter
     private Map<String, SiteItem> register = new ConcurrentHashMap<>();
@@ -71,5 +73,10 @@ public class MailService {
             e.printStackTrace();
         }
         sender.send(message);
+        count.incrementAndGet();
+    }
+
+    public int getCount() {
+        return count.get();
     }
 }

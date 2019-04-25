@@ -72,6 +72,7 @@ public class HtmlScanApplicationTests {
 			log.error(e.getMessage());
 			e.printStackTrace();
 		}
+		assertEquals(properties.getSites().size(), mailService.getCount());
 
 		try {
 			TimeUnit.SECONDS.sleep(10L);
