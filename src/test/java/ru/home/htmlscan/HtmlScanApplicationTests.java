@@ -66,12 +66,12 @@ public class HtmlScanApplicationTests {
 			properties.getSites().stream().forEach(u -> {
 				mailService.checkSite(u, htmlOpened);
 				mailService.checkSite(u, htmlClosed);
+				assertEquals(mailService.getRegister().get(u).getSended(), 1);
 			});
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
 		}
-		assertEquals(properties.getSites().size(), mailService.getCount());
 
 		try {
 			TimeUnit.SECONDS.sleep(10L);

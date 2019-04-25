@@ -55,11 +55,6 @@ public class HtmlController {
         return sb.toString();
     }
 
-    @GetMapping("/sended")
-    public int getSended() {
-        return mailService.getCount();
-    }
-
     @PostMapping("/mailcheck")
     public void mailCheck(@RequestBody MailItem item) {
         mailService.sendMessage(item.getSubject(), item.getMessage());

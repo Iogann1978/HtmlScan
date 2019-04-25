@@ -29,7 +29,11 @@ public class HtmlScanRunner {
 	        log.error("Site's list is null");
 	        return;
         }
-
-        properties.getSites().stream().forEach(u -> htmlService.getHtml(u).thenAccept(c -> mailService.checkSite(u, c)));
+        properties.getSites().stream().forEach(u -> htmlService.getHtml(u).thenAccept(c ->
+				mailService.checkSite(u, c).thenAccept(f -> {
+					if(f) {
+						htmlService.register(u);
+					}
+				})));
     }
 }
