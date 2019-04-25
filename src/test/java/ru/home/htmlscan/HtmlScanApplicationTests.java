@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.home.htmlscan.config.HtmlScanProperties;
 import ru.home.htmlscan.model.SiteItem;
@@ -22,6 +23,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -32,7 +34,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Profile("test")
+@ActiveProfiles("test")
 @Slf4j
 public class HtmlScanApplicationTests {
 
@@ -64,18 +66,16 @@ public class HtmlScanApplicationTests {
 			val htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()));
 			val htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()));
 			properties.getSites().stream().forEach(u -> {
-				mailService.checkSite(u, htmlOpened);
-				mailService.checkSite(u, htmlClosed);
+				try {
+					mailService.checkSite(u, htmlClosed).get();
+					mailService.checkSite(u, htmlOpened).get();
+				} catch (InterruptedException | ExecutionException e) {
+					log.error(e.getMessage());
+					e.printStackTrace();
+				}
 				assertEquals(mailService.getRegister().get(u).getSended(), 1);
 			});
 		} catch (IOException e) {
-			log.error(e.getMessage());
-			e.printStackTrace();
-		}
-
-		try {
-			TimeUnit.SECONDS.sleep(10L);
-		} catch (InterruptedException e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
 		}
