@@ -45,12 +45,12 @@ public class MailService {
         }
 
         val item = register.get(uri);
-        item.setVisits(item.getVisits() + 1L);
+        item.visitsInc();
         if(code.contains(phrase) && item.getState() != SiteState.REG_OPENED) {
             log.info("Registration for site {} is open!", uri);
-            item.setAttemps(item.getAttemps() + 1);
+            item.attempsInc();
             sendMessage("Registration has opened!", String.format("Registration for site %s is open!", uri));
-            item.setSended(item.getSended() + 1);
+            item.sendedInc();
             item.setState(SiteState.REG_OPENED);
             return;
         }
@@ -61,7 +61,7 @@ public class MailService {
         }
     }
 
-    public void sendMessage(String subject, String text) {
+    private void sendMessage(String subject, String text) {
         val message = sender.createMimeMessage();
         val helper = new MimeMessageHelper(message);
         try {

@@ -9,4 +9,16 @@ public class SiteItem {
     private SiteState state;
     private int attemps, sended;
     private long visits;
+
+    public void attempsInc() {
+        attemps++;
+    }
+
+    public void sendedInc() {
+        sended++;
+    }
+
+    public void visitsInc() {
+        visits++;
+    }
 }

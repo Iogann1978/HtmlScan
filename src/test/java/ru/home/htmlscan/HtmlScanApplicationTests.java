@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -80,11 +79,6 @@ public class HtmlScanApplicationTests {
 			log.error(e.getMessage());
 			e.printStackTrace();
 		}
-	}
-
-	//@Test
-	public void mailSendTest() {
-		mailService.sendMessage("Test", "Test");
 	}
 
 	@Test
