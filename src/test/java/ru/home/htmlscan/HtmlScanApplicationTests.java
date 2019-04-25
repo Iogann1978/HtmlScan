@@ -8,8 +8,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.test.web.client.TestRestTemplate;;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -22,9 +25,9 @@ import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,7 +35,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Slf4j
 public class HtmlScanApplicationTests {
@@ -43,6 +46,8 @@ public class HtmlScanApplicationTests {
 	private HtmlScanProperties properties;
 	@Mock
 	private JavaMailSender testSender;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
 	private MailService mailService;
 
@@ -102,4 +107,13 @@ public class HtmlScanApplicationTests {
 		assertEquals(item2.getVisits(), item3.getVisits());
 		assertEquals(item2.getState(), item3.getState());
 	}
+
+	@Test
+    public void restTest() {
+	    val responseList = restTemplate.exchange("/htmlscan/list", HttpMethod.GET,
+                null, new ParameterizedTypeReference<List<String>>(){});;
+	    assertEquals(responseList.getStatusCode(), HttpStatus.OK);
+        val responseString = restTemplate.getForEntity("/htmlscan/tasks", String.class);
+        assertEquals(responseString.getStatusCode(), HttpStatus.OK);
+    }
 }
