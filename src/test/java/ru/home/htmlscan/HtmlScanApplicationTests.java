@@ -26,8 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -67,8 +66,8 @@ public class HtmlScanApplicationTests {
 			val htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()));
 			properties.getSites().stream().forEach(u -> {
 				try {
-					mailService.checkSite(u, htmlClosed).get();
-					mailService.checkSite(u, htmlOpened).get();
+					assertFalse(mailService.checkSite(u, htmlClosed).get());
+					assertTrue(mailService.checkSite(u, htmlOpened).get());
 				} catch (InterruptedException | ExecutionException e) {
 					log.error(e.getMessage());
 					e.printStackTrace();
