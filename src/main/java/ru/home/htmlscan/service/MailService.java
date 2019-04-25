@@ -32,16 +32,16 @@ public class MailService {
 
     @Async("mailExecutor")
     public CompletableFuture<Boolean> checkSite(String uri, String code) {
-        if(!register.containsKey(uri)) {
+        register.computeIfAbsent(uri, key -> {
             val item = SiteItem.builder()
                     .attemps(0)
                     .sended(0)
                     .visits(0L)
                     .state(SiteState.ADDED)
                     .build();
-            register.put(uri, item);
             log.info("Site {} has added to register", uri);
-        }
+            return item;
+        });
 
         val item = register.get(uri);
         item.visitsInc();
