@@ -1,6 +1,7 @@
 package ru.home.htmlscan;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +33,14 @@ public class HtmlScanRunner {
         properties.getSites().stream().forEach(u -> htmlService.getHtml(u).thenAccept(c ->
 				mailService.checkSite(u, c).thenAccept(f -> {
 					if(f) {
-						htmlService.register(u);
+						htmlService.register(u).thenAccept(r -> {
+							if(r == HttpStatus.OK) {
+								log.info("You has registered on site {}", u);
+								mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", u));
+							} else {
+								log.error("Registration status code={}, reason: {}", r, r.getReasonPhrase());
+							}
+						});
 					}
 				})));
     }

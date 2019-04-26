@@ -1,13 +1,16 @@
 package ru.home.htmlscan.service;
 
+import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import ru.home.htmlscan.config.HtmlScanProperties;
+import ru.home.htmlscan.model.RegisterItem;
 
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
@@ -16,10 +19,12 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class HtmlService {
     private RestTemplate restTemplate;
+    private HtmlScanProperties properties;
 
     @Autowired
-    public HtmlService(RestTemplate restTemplate) {
+    public HtmlService(RestTemplate restTemplate, HtmlScanProperties properties) {
         this.restTemplate = restTemplate;
+        this.properties = properties;
     }
 
     @Async("htmlExecutor")
@@ -34,14 +39,20 @@ public class HtmlService {
     }
 
     @Async("htmlExecutor")
-    public CompletableFuture<HttpStatus> register(String uri) {
+    public CompletableFuture<HttpStatus> register(String html) {
+        val item = RegisterItem.get(html);
+        item.setFIO("Козлов Антон Викторович");
+        item.setEMAIL("iogann1978@gmail.com");
+        item.setPHONE("+79099520361");
+        val headers = new HttpHeaders();
+        headers.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        val request = new HttpEntity<>(item, headers);
         val params = new HashMap<String, String>();
-        params.put("FIO", "Козлов Антон Викторович");
-        params.put("PHONE", "+79099520361");
-        params.put("EMAIL", "iogann1978@gmail.com");
-        params.put("check_in-18918__form__checkbox-1", "true");
-        params.put("check_in-18918__form__checkbox-2", "true");
-        val response = restTemplate.exchange(uri, HttpMethod.GET, null, String.class, params);
+        params.put("ACTION", "set");
+        params.put("TIME_ID", item.getTIME_ID());
+        val response = restTemplate.exchange(properties.getUrireg(), HttpMethod.GET,
+                request, String.class, params);
         return CompletableFuture.completedFuture(response.getStatusCode());
     }
 }

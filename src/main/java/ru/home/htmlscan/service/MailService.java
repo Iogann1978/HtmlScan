@@ -32,19 +32,23 @@ public class MailService {
 
     @Async("mailExecutor")
     public CompletableFuture<Boolean> checkSite(String uri, String code) {
-        register.computeIfAbsent(uri, key -> {
-            val item = SiteItem.builder()
+        SiteItem item = register.computeIfAbsent(uri, key -> {
+            val siteItem = SiteItem.builder()
                     .attemps(0)
                     .sended(0)
                     .visits(0L)
                     .state(SiteState.ADDED)
                     .build();
             log.info("Site {} has added to register", uri);
-            return item;
+            return siteItem;
         });
 
-        val item = register.get(uri);
         item.visitsInc();
+
+        if(item.getState() == SiteState.REGISTERED) {
+            return CompletableFuture.completedFuture(false);
+        }
+
         if(code.contains(phrase) && item.getState() != SiteState.REG_OPENED) {
             log.info("Registration for site {} is open!", uri);
             item.attempsInc();
@@ -62,6 +66,7 @@ public class MailService {
         return CompletableFuture.completedFuture(false);
     }
 
+    @Async("mailExecutor")
     public void sendMessage(String subject, String text) {
         val message = sender.createMimeMessage();
         val helper = new MimeMessageHelper(message);
@@ -74,5 +79,9 @@ public class MailService {
             e.printStackTrace();
         }
         sender.send(message);
+    }
+
+    public void setRegistered(String uri) {
+        register.get(uri).setState(SiteState.REGISTERED);
     }
 }

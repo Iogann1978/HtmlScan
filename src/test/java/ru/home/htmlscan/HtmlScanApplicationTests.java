@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.home.htmlscan.config.HtmlScanProperties;
+import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
 import ru.home.htmlscan.service.MailService;
@@ -50,9 +52,13 @@ public class HtmlScanApplicationTests {
     private TestRestTemplate restTemplate;
 
 	private MailService mailService;
+	private Resource siteOpened, siteClosed;
 
 	@Before
 	public void setUp() {
+		siteOpened = resourceLoader.getResource("classpath:site_opened.html");
+		siteClosed = resourceLoader.getResource("classpath:site_closed.html");
+
 		val mimeMessage = new MimeMessage((Session) null);
 		doNothing().when(testSender).send(any(MimeMessage.class));
 		when(testSender.createMimeMessage()).thenReturn(mimeMessage);
@@ -61,9 +67,7 @@ public class HtmlScanApplicationTests {
 
 	@Test
 	public void checkOpenedTest() {
-		val siteOpened = resourceLoader.getResource("classpath:site_opened.html");
 		assertNotNull(siteOpened);
-		val siteClosed = resourceLoader.getResource("classpath:site_closed.html");
 		assertNotNull(siteClosed);
 
 		try {
@@ -106,6 +110,8 @@ public class HtmlScanApplicationTests {
 		assertEquals(item2.getSended(), item3.getSended());
 		assertEquals(item2.getVisits(), item3.getVisits());
 		assertEquals(item2.getState(), item3.getState());
+		val item4 = map.computeIfAbsent(key, k -> null);
+		assertEquals(item1, item4);
 	}
 
 	@Test
@@ -116,4 +122,20 @@ public class HtmlScanApplicationTests {
         val responseString = restTemplate.getForEntity("/htmlscan/tasks", String.class);
         assertEquals(responseString.getStatusCode(), HttpStatus.OK);
     }
+
+    @Test
+	public void parseTest() {
+		assertNotNull(siteOpened);
+
+		try {
+			val htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()));
+			val item = RegisterItem.get(htmlOpened);
+			log.info("registration item: {}", item);
+			assertNotNull(item);
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
+
+	}
 }

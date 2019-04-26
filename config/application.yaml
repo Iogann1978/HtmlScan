@@ -1,4 +1,5 @@
 html:
+   urireg: https://dni-naslediya.ru/calendar/reserve.php
    sites:
       - https://dni-naslediya.ru/calendar/object/kryshi-bashni-i-truby-fabriki-eynem/
       - https://dni-naslediya.ru/calendar/object/bashni-truby-i-pivo-badaevskogo-pivzavoda/
