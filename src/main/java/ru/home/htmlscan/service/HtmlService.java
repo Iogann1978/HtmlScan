@@ -3,7 +3,6 @@ package ru.home.htmlscan.service;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
@@ -20,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class HtmlService {
     private RestTemplate restTemplate;
     private HtmlScanProperties properties;
+    private static final String phrase = ">Регистрация<";
 
     @Autowired
     public HtmlService(RestTemplate restTemplate, HtmlScanProperties properties) {
@@ -54,5 +54,14 @@ public class HtmlService {
         val response = restTemplate.exchange(properties.getUrireg(), HttpMethod.GET,
                 request, String.class, params);
         return CompletableFuture.completedFuture(response.getStatusCode());
+    }
+
+    @Async("htmlExecutor")
+    public CompletableFuture<Boolean> checkHtml(String html) {
+        if(html.contains(phrase)) {
+            return CompletableFuture.completedFuture(true);
+        } else {
+            return CompletableFuture.completedFuture(false);
+        }
     }
 }

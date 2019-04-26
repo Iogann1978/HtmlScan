@@ -9,6 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
 import ru.home.htmlscan.model.MailItem;
 import ru.home.htmlscan.service.MailService;
+import ru.home.htmlscan.service.ScanService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,20 +20,22 @@ import java.util.stream.Collectors;
 public class HtmlController {
 
     private MailService mailService;
+    private ScanService scanService;
     private ThreadPoolTaskExecutor htmlExecutor, mailExecutor;
 
     @Autowired
-    public HtmlController(MailService mailService,
+    public HtmlController(MailService mailService, ScanService scanService,
                           @Qualifier("htmlExecutor") TaskExecutor htmlExecutor,
                           @Qualifier("mailExecutor") TaskExecutor mailExecutor) {
         this.mailService = mailService;
+        this.scanService = scanService;
         this.htmlExecutor = (ThreadPoolTaskExecutor) htmlExecutor;
         this.mailExecutor = (ThreadPoolTaskExecutor) mailExecutor;
     }
 
     @GetMapping("/list")
     public List<String> getList() {
-        return mailService.getRegister().entrySet().stream().
+        return scanService.getRegister().entrySet().stream().
                 map(e -> "uri=" + e.getKey() + ", state=" + e.getValue().getState() +
                 ", attempts=" + e.getValue().getAttemps() +
                 ", sended=" + e.getValue().getSended() +

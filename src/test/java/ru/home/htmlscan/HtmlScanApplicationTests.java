@@ -21,7 +21,9 @@ import ru.home.htmlscan.config.HtmlScanProperties;
 import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
+import ru.home.htmlscan.service.HtmlService;
 import ru.home.htmlscan.service.MailService;
+import ru.home.htmlscan.service.ScanService;
 
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
@@ -46,12 +48,15 @@ public class HtmlScanApplicationTests {
 	private ResourceLoader resourceLoader;
 	@Autowired
 	private HtmlScanProperties properties;
+
 	@Mock
 	private JavaMailSender testSender;
     @Autowired
-    private TestRestTemplate restTemplate;
+    private TestRestTemplate testRestTemplate;
 
+    private HtmlService htmlService;
 	private MailService mailService;
+	private ScanService scanService;
 	private Resource siteOpened, siteClosed;
 
 	@Before
@@ -62,7 +67,10 @@ public class HtmlScanApplicationTests {
 		val mimeMessage = new MimeMessage((Session) null);
 		doNothing().when(testSender).send(any(MimeMessage.class));
 		when(testSender.createMimeMessage()).thenReturn(mimeMessage);
+
 		mailService = new MailService(testSender);
+		htmlService = new HtmlService(null, properties);
+		scanService = new ScanService(properties, htmlService, mailService);
 	}
 
 	@Test
@@ -73,15 +81,15 @@ public class HtmlScanApplicationTests {
 		try {
 			val htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()));
 			val htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()));
-			properties.getSites().stream().forEach(u -> {
+			properties.getSites().stream().forEach(uri -> {
 				try {
-					assertFalse(mailService.checkSite(u, htmlClosed).get());
-					assertTrue(mailService.checkSite(u, htmlOpened).get());
+					assertFalse(htmlService.checkHtml(htmlClosed).get());
+					assertTrue(htmlService.checkHtml(htmlOpened).get());
 				} catch (InterruptedException | ExecutionException e) {
 					log.error(e.getMessage());
 					e.printStackTrace();
 				}
-				assertEquals(mailService.getRegister().get(u).getSended(), 1);
+				assertEquals(scanService.getRegister().get(uri).getSended(), 1);
 			});
 		} catch (IOException e) {
 			log.error(e.getMessage());
@@ -116,10 +124,10 @@ public class HtmlScanApplicationTests {
 
 	@Test
     public void restTest() {
-	    val responseList = restTemplate.exchange("/htmlscan/list", HttpMethod.GET,
+	    val responseList = testRestTemplate.exchange("/htmlscan/list", HttpMethod.GET,
                 null, new ParameterizedTypeReference<List<String>>(){});;
 	    assertEquals(responseList.getStatusCode(), HttpStatus.OK);
-        val responseString = restTemplate.getForEntity("/htmlscan/tasks", String.class);
+        val responseString = testRestTemplate.getForEntity("/htmlscan/tasks", String.class);
         assertEquals(responseString.getStatusCode(), HttpStatus.OK);
     }
 
@@ -136,6 +144,5 @@ public class HtmlScanApplicationTests {
 			log.error(e.getMessage());
 			e.printStackTrace();
 		}
-
 	}
 }
