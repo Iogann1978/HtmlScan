@@ -37,6 +37,7 @@ public class HtmlScanRunner {
 							if(r == HttpStatus.OK) {
 								log.info("You has registered on site {}", u);
 								mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", u));
+								mailService.setRegistered(u);
 							} else {
 								log.error("Registration status code={}, reason: {}", r, r.getReasonPhrase());
 							}
