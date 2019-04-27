@@ -54,9 +54,7 @@ public class HtmlScanApplicationTests {
     @Autowired
     private TestRestTemplate testRestTemplate;
 
-    private HtmlService htmlService;
 	private MailService mailService;
-	private ScanService scanService;
 	private Resource siteOpened, siteClosed;
 
 	@Before
@@ -69,8 +67,6 @@ public class HtmlScanApplicationTests {
 		when(testSender.createMimeMessage()).thenReturn(mimeMessage);
 
 		mailService = new MailService(testSender);
-		htmlService = new HtmlService(null, properties);
-		scanService = new ScanService(properties, htmlService, mailService);
 	}
 
 	@Test
@@ -83,13 +79,12 @@ public class HtmlScanApplicationTests {
 			val htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()));
 			properties.getSites().stream().forEach(uri -> {
 				try {
-					assertFalse(htmlService.checkHtml(htmlClosed).get());
-					assertTrue(htmlService.checkHtml(htmlOpened).get());
+					assertFalse(HtmlService.checkHtml(htmlClosed).get());
+					assertTrue(HtmlService.checkHtml(htmlOpened).get());
 				} catch (InterruptedException | ExecutionException e) {
 					log.error(e.getMessage());
 					e.printStackTrace();
 				}
-				assertEquals(scanService.getRegister().get(uri).getSended(), 1);
 			});
 		} catch (IOException e) {
 			log.error(e.getMessage());

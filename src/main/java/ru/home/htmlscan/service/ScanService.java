@@ -34,10 +34,19 @@ public class ScanService {
     @Scheduled(fixedDelay = 5000)
     public void run() {
 	    if(properties.getSites() == null) {
+	    	// Список сайтов не задан - уходим
 	        log.error("Site's list is null");
 	        return;
         }
+
+        // Перебираем все сайты из списка
         properties.getSites().stream().forEach(uri -> htmlService.getHtml(uri).thenAccept(html -> {
+        	if(html == null) {
+        		// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
+        		return;
+			}
+
+        	// Если сайта нет в списке отслеживаемых, то добавляем его туда и возвращаем вставленный экземпляр
 			SiteItem item = register.computeIfAbsent(uri, key -> {
 				val siteItem = SiteItem.builder()
 						.attemps(0)
@@ -48,28 +57,38 @@ public class ScanService {
 				log.info("Site {} has added to register", uri);
 				return siteItem;
 			});
+			// Поскольку мы уже получили его html, увеличиваем количество посещений
 			item.visitsInc();
 
+			// Если сайт был только добавлен или регистрация на нём пока закрыта, проверяем его на регистрацию
 			if(item.getState() == SiteState.ADDED || item.getState() == SiteState.REG_CLOSED) {
 				htmlService.checkHtml(uri).thenAccept(flag -> {
 					if(flag) {
+						// Регистрация открыта
 						item.setState(SiteState.REG_OPENED);
+						// Отправляем уведомление на почту
 						mailService.sendMessage("Registration is opened", String.format("Registration for site %s is open!", uri));
 						log.info("Registration for site {} is open!", uri);
+						// Увеличиваем количество уведомлений на почту и попвток регистрации
 						item.sendedInc();
 						item.attempsInc();
+						// Пробуем зарегистрироваться
 						htmlService.register(uri).thenAccept(response -> {
 							if(response == HttpStatus.OK) {
+								// Регстрация вернула овет 200, отправляем уведомление на почту
 								log.info("You has registered on site {}", uri);
 								mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", uri));
+								// Увеличиваем количество уведомлений на почту и меняем статус
 								item.sendedInc();
 								item.setState(SiteState.REGISTERED);
 							} else {
+								// Регистрация не удалась, выводим причину нв лог
 								log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
 							}
 						});
-					} else if(item.getState() != SiteState.REGISTERED) {
-							item.setState(SiteState.REG_CLOSED);
+					} else if(item.getState() != SiteState.REGISTERED && item.getState() != SiteState.REG_CLOSED) {
+						// Если регистрация закрыта и сайт в состоянии Добавлени или Открыт для регистрации, то меняем его статус
+						item.setState(SiteState.REG_CLOSED);
 					}
 				});
 			};

@@ -57,7 +57,7 @@ public class HtmlService {
     }
 
     @Async("htmlExecutor")
-    public CompletableFuture<Boolean> checkHtml(String html) {
+    public static CompletableFuture<Boolean> checkHtml(String html) {
         if(html.contains(phrase)) {
             return CompletableFuture.completedFuture(true);
         } else {
