@@ -94,7 +94,7 @@ public class HtmlScanApplicationTests {
 
 	@Test
 	public void mapTest() {
-		String key = "http://test/ru";
+		String key = "http://test.ru";
 		val map = new ConcurrentHashMap<String, SiteItem>();
 		val item1 = SiteItem.builder()
 				.attemps(0)
