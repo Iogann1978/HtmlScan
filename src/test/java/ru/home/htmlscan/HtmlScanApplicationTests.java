@@ -21,15 +21,14 @@ import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
-import ru.home.htmlscan.service.HtmlService;
-import ru.home.htmlscan.service.MailService;
-import ru.home.htmlscan.service.ScanService;
+import ru.home.htmlscan.service.*;
 
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -48,48 +47,50 @@ public class HtmlScanApplicationTests {
 	private ResourceLoader resourceLoader;
 	@Autowired
 	private HtmlProperties properties;
+	@Autowired
+	private TestRestTemplate testRestTemplate;
 
 	@Mock
 	private JavaMailSender testSender;
-    @Autowired
-    private TestRestTemplate testRestTemplate;
 
+	private HtmlService htmlService;
 	private MailService mailService;
-	private Resource siteOpened, siteClosed;
+	private String htmlOpened, htmlClosed;
 
 	@Before
 	public void setUp() {
-		siteOpened = resourceLoader.getResource("classpath:site_opened.html");
-		siteClosed = resourceLoader.getResource("classpath:site_closed.html");
+		val siteOpened = resourceLoader.getResource("classpath:site_opened.html");
+		val siteClosed = resourceLoader.getResource("classpath:site_closed.html");
+		try {
+			htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()));
+			htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()));
+		} catch (IOException e) {
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}
 
 		val mimeMessage = new MimeMessage((Session) null);
 		doNothing().when(testSender).send(any(MimeMessage.class));
 		when(testSender.createMimeMessage()).thenReturn(mimeMessage);
 
-		mailService = new MailService(testSender);
+		mailService = new MailServiceImpl(testSender);
+		htmlService = new HtmlServiceImpl(null, properties);
 	}
 
 	@Test
 	public void checkOpenedTest() {
-		assertNotNull(siteOpened);
-		assertNotNull(siteClosed);
+		assertNotNull(htmlOpened);
+		assertNotNull(htmlClosed);
 
-		try {
-			val htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()));
-			val htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()));
-			properties.getSites().stream().forEach(uri -> {
-				try {
-					assertFalse(HtmlService.checkHtml(htmlClosed).get());
-					assertTrue(HtmlService.checkHtml(htmlOpened).get());
-				} catch (InterruptedException | ExecutionException e) {
-					log.error(e.getMessage());
-					e.printStackTrace();
-				}
-			});
-		} catch (IOException e) {
-			log.error(e.getMessage());
-			e.printStackTrace();
-		}
+		properties.getSites().stream().forEach(uri -> {
+			try {
+				assertFalse(htmlService.checkHtml(htmlClosed).get());
+				assertTrue(htmlService.checkHtml(htmlOpened).get());
+			} catch (InterruptedException | ExecutionException e) {
+				log.error(e.getMessage());
+				e.printStackTrace();
+			}
+		});
 	}
 
 	@Test
@@ -128,16 +129,10 @@ public class HtmlScanApplicationTests {
 
     @Test
 	public void parseTest() {
-		assertNotNull(siteOpened);
+		assertNotNull(htmlOpened);
 
-		try {
-			val htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()));
-			val item = RegisterItem.get(htmlOpened);
-			log.info("registration item: {}", item);
-			assertNotNull(item);
-		} catch (IOException e) {
-			log.error(e.getMessage());
-			e.printStackTrace();
-		}
+		val item = RegisterItem.get(htmlOpened);
+		log.info("registration item: {}", item);
+		assertNotNull(item);
 	}
 }

@@ -1,9 +1,17 @@
-html:
-   sites:
-      - https://dni-naslediya.ru/calendar/object/kryshi-bashni-i-truby-fabriki-eynem/
-
 spring:
    profiles: test
+
+registration:
+   users:
+      -
+         name: Корней Яшма
+         phone: "+79164367895"
+         email: kornej.yashma@gmail.com
+
+html:
+   sites:
+      - https://test1.ru
+      - https://test2.ru
 
    mail:
       host: smtp.gmail.com
