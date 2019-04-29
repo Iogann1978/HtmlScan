@@ -21,11 +21,11 @@ public class MailService {
     }
 
     @Async("mailExecutor")
-    public void sendMessage(String subject, String text) {
+    public void sendMessage(String subject, String text, String email) {
         val message = sender.createMimeMessage();
         val helper = new MimeMessageHelper(message);
         try {
-            helper.setTo("iogann1978@gmail.com");
+            helper.setTo(email);
             helper.setText(text);
             helper.setSubject(subject);
         } catch (MessagingException e) {

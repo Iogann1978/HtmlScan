@@ -8,7 +8,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.home.htmlscan.config.HtmlScanProperties;
+import ru.home.htmlscan.config.HtmlProperties;
+import ru.home.htmlscan.config.UserProperties;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
 
@@ -18,29 +19,31 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Slf4j
 public class ScanService {
-	private HtmlScanProperties properties;
+	private HtmlProperties htmlProperties;
+	private UserProperties userProperties;
 	private HtmlService htmlService;
 	private MailService mailService;
 	@Getter
 	private Map<String, SiteItem> register = new ConcurrentHashMap<>();
 
 	@Autowired
-    public ScanService(HtmlScanProperties properties, HtmlService htmlService, MailService mailService) {
-	    this.properties = properties;
+    public ScanService(HtmlProperties htmlProperties, UserProperties userProperties, HtmlService htmlService, MailService mailService) {
+	    this.htmlProperties = htmlProperties;
+	    this.userProperties = userProperties;
 	    this.htmlService = htmlService;
 	    this.mailService = mailService;
     }
 
     @Scheduled(fixedDelay = 5000)
     public void run() {
-	    if(properties.getSites() == null) {
+	    if(htmlProperties.getSites() == null) {
 	    	// Список сайтов не задан - уходим
 	        log.error("Site's list is null");
 	        return;
         }
 
         // Перебираем все сайты из списка
-        properties.getSites().stream().forEach(uri -> htmlService.getHtml(uri).thenAccept(html -> {
+		htmlProperties.getSites().stream().forEach(uri -> htmlService.getHtml(uri).thenAccept(html -> {
         	if(html == null) {
         		// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
         		return;
@@ -67,9 +70,10 @@ public class ScanService {
 						// Регистрация открыта
 						item.setState(SiteState.REG_OPENED);
 						// Отправляем уведомление на почту
-						mailService.sendMessage("Registration is opened", String.format("Registration for site %s is open!", uri));
+						userProperties.getUsers().stream().forEach(user ->
+								mailService.sendMessage("Registration is opened", String.format("Registration for site %s is open!", uri), user.getEmail()));
 						log.info("Registration for site {} is open!", uri);
-						// Увеличиваем количество уведомлений на почту и попвток регистрации
+						// Увеличиваем количество уведомлений на почту и попыток регистрации
 						item.sendedInc();
 						item.attempsInc();
 						// Пробуем зарегистрироваться
@@ -77,7 +81,8 @@ public class ScanService {
 							if(response == HttpStatus.OK) {
 								// Регстрация вернула овет 200, отправляем уведомление на почту
 								log.info("You has registered on site {}", uri);
-								mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", uri));
+								userProperties.getUsers().stream().forEach(user ->
+										mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", uri), user.getEmail()));
 								// Увеличиваем количество уведомлений на почту и меняем статус
 								item.sendedInc();
 								item.setState(SiteState.REGISTERED);

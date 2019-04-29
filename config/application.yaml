@@ -1,3 +1,14 @@
+registration:
+   users:
+      -
+        name: Козлов Антон Викторович
+        phone: "+79099520361"
+        email: iogann1978@gmail.com
+      -
+        name: Богданова Анна Валентиновна
+        phone: "+79057614573"
+        email: alma10@list.ru
+
 html:
    urireg: https://dni-naslediya.ru/calendar/reserve.php
    sites:

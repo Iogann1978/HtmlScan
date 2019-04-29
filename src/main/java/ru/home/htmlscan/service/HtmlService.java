@@ -8,7 +8,7 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import ru.home.htmlscan.config.HtmlScanProperties;
+import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.model.RegisterItem;
 
 import java.util.HashMap;
@@ -18,11 +18,11 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class HtmlService {
     private RestTemplate restTemplate;
-    private HtmlScanProperties properties;
+    private HtmlProperties properties;
     private static final String phrase = ">Регистрация<";
 
     @Autowired
-    public HtmlService(RestTemplate restTemplate, HtmlScanProperties properties) {
+    public HtmlService(RestTemplate restTemplate, HtmlProperties properties) {
         this.restTemplate = restTemplate;
         this.properties = properties;
     }

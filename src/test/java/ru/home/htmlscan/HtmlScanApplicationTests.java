@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import ru.home.htmlscan.config.HtmlScanProperties;
+import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
@@ -47,7 +47,7 @@ public class HtmlScanApplicationTests {
 	@Autowired
 	private ResourceLoader resourceLoader;
 	@Autowired
-	private HtmlScanProperties properties;
+	private HtmlProperties properties;
 
 	@Mock
 	private JavaMailSender testSender;

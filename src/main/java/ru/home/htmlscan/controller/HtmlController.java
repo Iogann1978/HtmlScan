@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
+import ru.home.htmlscan.config.UserProperties;
 import ru.home.htmlscan.model.MailItem;
 import ru.home.htmlscan.service.MailService;
 import ru.home.htmlscan.service.ScanService;
@@ -19,14 +20,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HtmlController {
 
+    private UserProperties userProperties;
     private MailService mailService;
     private ScanService scanService;
     private ThreadPoolTaskExecutor htmlExecutor, mailExecutor;
 
     @Autowired
-    public HtmlController(MailService mailService, ScanService scanService,
+    public HtmlController(UserProperties userProperties, MailService mailService, ScanService scanService,
                           @Qualifier("htmlExecutor") TaskExecutor htmlExecutor,
                           @Qualifier("mailExecutor") TaskExecutor mailExecutor) {
+        this.userProperties = userProperties;
         this.mailService = mailService;
         this.scanService = scanService;
         this.htmlExecutor = (ThreadPoolTaskExecutor) htmlExecutor;
@@ -60,6 +63,7 @@ public class HtmlController {
 
     @PostMapping("/mailcheck")
     public void mailCheck(@RequestBody MailItem item) {
-        mailService.sendMessage(item.getSubject(), item.getMessage());
+        userProperties.getUsers().stream().forEach(user ->
+                mailService.sendMessage(item.getSubject(), item.getMessage(), user.getEmail()));
     }
 }

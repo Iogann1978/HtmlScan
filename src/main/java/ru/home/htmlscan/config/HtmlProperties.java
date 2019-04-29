@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix="html")
 @Data
-public class HtmlScanProperties {
+public class HtmlProperties {
 	private List<String> sites = new ArrayList<String>();
 	private String urireg;
 }
