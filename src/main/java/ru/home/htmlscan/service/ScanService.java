@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.config.UserProperties;
+import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
 
@@ -41,6 +42,11 @@ public class ScanService {
 	        log.error("Site's list is null");
 	        return;
         }
+	    if(userProperties.getUsers() == null) {
+	    	// Список пользователей не задан - уходим
+			log.error("User's list is null");
+			return;
+		}
 
         // Перебираем все сайты из списка
 		htmlProperties.getSites().stream().forEach(uri -> htmlService.getHtml(uri).thenAccept(html -> {
@@ -65,7 +71,7 @@ public class ScanService {
 
 			// Если сайт был только добавлен или регистрация на нём пока закрыта, проверяем его на регистрацию
 			if(item.getState() == SiteState.ADDED || item.getState() == SiteState.REG_CLOSED) {
-				htmlService.checkHtml(uri).thenAccept(flag -> {
+				htmlService.checkHtml(html).thenAccept(flag -> {
 					if(flag) {
 						// Регистрация открыта
 						item.setState(SiteState.REG_OPENED);
@@ -77,19 +83,24 @@ public class ScanService {
 						item.sendedInc();
 						item.attempsInc();
 						// Пробуем зарегистрироваться
-						htmlService.register(uri).thenAccept(response -> {
-							if(response == HttpStatus.OK) {
-								// Регстрация вернула овет 200, отправляем уведомление на почту
-								log.info("You has registered on site {}", uri);
-								userProperties.getUsers().stream().forEach(user ->
-										mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", uri), user.getEmail()));
-								// Увеличиваем количество уведомлений на почту и меняем статус
-								item.sendedInc();
-								item.setState(SiteState.REGISTERED);
-							} else {
-								// Регистрация не удалась, выводим причину нв лог
-								log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
-							}
+						userProperties.getUsers().stream().forEach(user -> {
+							val reg = RegisterItem.get(html);
+							reg.setFIO(user.getName());
+							reg.setEMAIL(user.getEmail());
+							reg.setPHONE(user.getPhone());
+							htmlService.register(reg).thenAccept(response -> {
+								if (response == HttpStatus.OK) {
+									// Регистрация вернула ответ 200, отправляем уведомление на почту
+									log.info("You has registered on site {}", uri);
+									mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", uri), user.getEmail());
+									// Увеличиваем количество уведомлений на почту и меняем статус
+									item.sendedInc();
+									item.setState(SiteState.REGISTERED);
+								} else {
+									// Регистрация не удалась, выводим причину нв лог
+									log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
+								}
+							});
 						});
 					} else if(item.getState() != SiteState.REGISTERED && item.getState() != SiteState.REG_CLOSED) {
 						// Если регистрация закрыта и сайт в состоянии Добавлени или Открыт для регистрации, то меняем его статус

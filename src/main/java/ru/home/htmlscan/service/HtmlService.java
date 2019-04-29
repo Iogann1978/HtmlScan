@@ -39,11 +39,7 @@ public class HtmlService {
     }
 
     @Async("htmlExecutor")
-    public CompletableFuture<HttpStatus> register(String html) {
-        val item = RegisterItem.get(html);
-        item.setFIO("Козлов Антон Викторович");
-        item.setEMAIL("iogann1978@gmail.com");
-        item.setPHONE("+79099520361");
+    public CompletableFuture<HttpStatus> register(RegisterItem item) {
         val headers = new HttpHeaders();
         headers.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -57,7 +53,7 @@ public class HtmlService {
     }
 
     @Async("htmlExecutor")
-    public static CompletableFuture<Boolean> checkHtml(String html) {
+    public CompletableFuture<Boolean> checkHtml(String html) {
         if(html.contains(phrase)) {
             return CompletableFuture.completedFuture(true);
         } else {
