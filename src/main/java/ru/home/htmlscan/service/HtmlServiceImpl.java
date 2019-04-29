@@ -14,6 +14,7 @@ import ru.home.htmlscan.model.RegisterItem;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,8 @@ import java.util.stream.Collectors;
 public class HtmlServiceImpl implements HtmlService {
     private RestTemplate restTemplate;
     private HtmlProperties properties;
-    private static final String phrase = ">Регистрация<", className="events_gallery__item__body";
+    private static final String phraseReg = ">Регистрация<", phraseEmb = "Посол",
+            className="events_gallery__item__body";
 
     @Autowired
     public HtmlServiceImpl(RestTemplate restTemplate, HtmlProperties properties) {
@@ -57,7 +59,7 @@ public class HtmlServiceImpl implements HtmlService {
 
     @Async("htmlExecutor")
     public CompletableFuture<Boolean> checkHtml(String html) {
-        if(html.contains(phrase)) {
+        if(html.contains(phraseReg)) {
             return CompletableFuture.completedFuture(true);
         } else {
             return CompletableFuture.completedFuture(false);
@@ -65,9 +67,19 @@ public class HtmlServiceImpl implements HtmlService {
     }
 
     @Async("htmlExecutor")
-    public CompletableFuture<List<String>> checkEmbassies(String html) {
-        return CompletableFuture.completedFuture(
-                Jsoup.parse(html).getElementsByClass(className)
-                        .stream().map(e -> e.attr("href")).collect(Collectors.toList()));
+    public CompletableFuture<Map<String, String>> checkEmbassies(String html) {
+        val map = new HashMap<String, String>();
+        Jsoup.parse(html).getElementsByClass(className)
+                .stream().filter(e -> e.text().contains(phraseEmb))
+                .forEach(e -> map.put(e.attr("href"), e.text()));
+        return CompletableFuture.completedFuture(map);
+    }
+
+    @Async("htmlExecutor")
+    public CompletableFuture<Map<String, String>> getEvents(String html) {
+        val map = new HashMap<String, String>();
+        Jsoup.parse(html).getElementsByClass(className)
+                .stream().forEach(e -> map.put(e.attr("href"), e.text()));
+        return CompletableFuture.completedFuture(map);
     }
 }

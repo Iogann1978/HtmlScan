@@ -7,29 +7,37 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
+import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.config.UserProperties;
 import ru.home.htmlscan.model.MailItem;
+import ru.home.htmlscan.service.HtmlService;
 import ru.home.htmlscan.service.MailService;
 import ru.home.htmlscan.service.ScanService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("htmlscan")
 @Slf4j
 public class HtmlController {
-
+    private HtmlProperties htmlProperties;
     private UserProperties userProperties;
+    private HtmlService htmlService;
     private MailService mailService;
     private ScanService scanService;
     private ThreadPoolTaskExecutor htmlExecutor, mailExecutor;
 
     @Autowired
-    public HtmlController(UserProperties userProperties, MailService mailService, ScanService scanService,
+    public HtmlController(HtmlProperties htmlProperties, UserProperties userProperties,
+                          HtmlService htmlService, MailService mailService, ScanService scanService,
                           @Qualifier("htmlExecutor") TaskExecutor htmlExecutor,
                           @Qualifier("mailExecutor") TaskExecutor mailExecutor) {
+        this.htmlProperties = htmlProperties;
         this.userProperties = userProperties;
+        this.htmlService = htmlService;
         this.mailService = mailService;
         this.scanService = scanService;
         this.htmlExecutor = (ThreadPoolTaskExecutor) htmlExecutor;
@@ -65,5 +73,17 @@ public class HtmlController {
     public void mailCheck(@RequestBody MailItem item) {
         userProperties.getUsers().stream().forEach(user ->
                 mailService.sendMessage(item.getSubject(), item.getMessage(), user.getEmail()));
+    }
+
+    @GetMapping("/events")
+    public Map<String, String> getEvents() {
+        try {
+            val html = htmlService.getHtml(htmlProperties.getUrilist()).get();
+            return htmlService.getEvents(html).get();
+        } catch (InterruptedException | ExecutionException e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 }

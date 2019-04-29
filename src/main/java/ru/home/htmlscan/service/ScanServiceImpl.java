@@ -1,5 +1,6 @@
 package ru.home.htmlscan.service;
 
+import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -26,6 +28,7 @@ public class ScanServiceImpl implements ScanService {
 	private MailService mailService;
 	@Getter
 	private Map<String, SiteItem> register = new ConcurrentHashMap<>();
+	private Set<String> embassies = Sets.newConcurrentHashSet();
 
 	@Autowired
     public ScanServiceImpl(HtmlProperties htmlProperties, UserProperties userProperties, HtmlService htmlService, MailService mailService) {
@@ -118,6 +121,22 @@ public class ScanServiceImpl implements ScanService {
 			return;
 		}
 
-		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(html -> htmlService.checkEmbassies(html));
+		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(html -> {
+			if(html == null) {
+				// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
+				return;
+			}
+
+			htmlService.checkEmbassies(html).thenAccept(map -> {
+				map.entrySet().stream().filter(e -> !embassies.contains(e.getKey())).forEach(e -> {
+						embassies.add(e.getKey());
+						log.info("Embassy detected! {}, uri: {}", e.getValue(), e.getKey());
+						userProperties.getUsers().stream().forEach(user ->
+							mailService.sendMessage("Embassy detected!",
+									String.format("Embassy detected! %s, uri: %s", e.getValue(), e.getKey()),
+									user.getEmail()));
+				});
+			});
+		});
 	}
 }
