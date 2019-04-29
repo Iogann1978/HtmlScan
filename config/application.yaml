@@ -10,6 +10,7 @@ registration:
         email: alma10@list.ru
 
 html:
+   urilist: https://dni-naslediya.ru/calendar/free/
    urireg: https://dni-naslediya.ru/calendar/reserve.php
    sites:
       - https://dni-naslediya.ru/calendar/object/vysoko-petrovskiy-monastyr/

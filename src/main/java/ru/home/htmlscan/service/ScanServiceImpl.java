@@ -36,7 +36,7 @@ public class ScanServiceImpl implements ScanService {
     }
 
     @Scheduled(fixedDelay = 5000)
-    public void run() {
+    public void scanRegister() {
 	    if(htmlProperties.getSites() == null) {
 	    	// Список сайтов не задан - уходим
 	        log.error("Site's list is null");
@@ -110,4 +110,14 @@ public class ScanServiceImpl implements ScanService {
 			};
 		}));
     }
+
+	@Scheduled(fixedDelay = 60000)
+	public void scanList() {
+		if(htmlProperties.getUrilist() == null) {
+			log.error("[urilist] property is null");
+			return;
+		}
+
+		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(html -> htmlService.checkEmbassies(html));
+	}
 }

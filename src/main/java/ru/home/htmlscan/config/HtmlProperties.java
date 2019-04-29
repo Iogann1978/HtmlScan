@@ -14,4 +14,5 @@ import org.springframework.stereotype.Component;
 public class HtmlProperties {
 	private List<String> sites = new ArrayList<String>();
 	private String urireg;
+	private String urilist;
 }

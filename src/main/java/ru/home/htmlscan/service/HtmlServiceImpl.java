@@ -3,6 +3,7 @@ package ru.home.htmlscan.service;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
@@ -12,14 +13,16 @@ import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.model.RegisterItem;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class HtmlServiceImpl implements HtmlService {
     private RestTemplate restTemplate;
     private HtmlProperties properties;
-    private static final String phrase = ">Регистрация<";
+    private static final String phrase = ">Регистрация<", className="events_gallery__item__body";
 
     @Autowired
     public HtmlServiceImpl(RestTemplate restTemplate, HtmlProperties properties) {
@@ -59,5 +62,12 @@ public class HtmlServiceImpl implements HtmlService {
         } else {
             return CompletableFuture.completedFuture(false);
         }
+    }
+
+    @Async("htmlExecutor")
+    public CompletableFuture<List<String>> checkEmbassies(String html) {
+        return CompletableFuture.completedFuture(
+                Jsoup.parse(html).getElementsByClass(className)
+                        .stream().map(e -> e.attr("href")).collect(Collectors.toList()));
     }
 }
