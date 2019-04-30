@@ -55,6 +55,7 @@ public class HtmlServiceImpl implements HtmlService {
         log.info("reg item: {}", item);
         val response = restTemplate.exchange(properties.getUrireg(), HttpMethod.GET,
                 request, String.class, params);
+        log.info("Response: {]", response.getBody());
         return CompletableFuture.completedFuture(response.getStatusCode());
     }
 

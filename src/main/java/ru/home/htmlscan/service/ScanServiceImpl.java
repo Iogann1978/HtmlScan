@@ -89,10 +89,11 @@ public class ScanServiceImpl implements ScanService {
 						item.attempsInc();
 						// Пробуем зарегистрироваться
 						userProperties.getUsers().stream().forEach(user -> {
-							val reg = RegisterItem.get(html);
+							val reg = new RegisterItem();
 							reg.setFIO(user.getName());
 							reg.setEMAIL(user.getEmail());
 							reg.setPHONE(user.getPhone());
+							reg.form(html);
 							htmlService.register(reg).thenAccept(response -> {
 								if (response == HttpStatus.OK) {
 									// Регистрация вернула ответ 200, отправляем уведомление на почту
