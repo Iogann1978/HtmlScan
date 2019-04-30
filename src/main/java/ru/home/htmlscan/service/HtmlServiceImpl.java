@@ -52,6 +52,7 @@ public class HtmlServiceImpl implements HtmlService {
         val params = new HashMap<String, String>();
         params.put("ACTION", "set");
         params.put("TIME_ID", item.getTIME_ID());
+        log.info("reg item: {}", item);
         val response = restTemplate.exchange(properties.getUrireg(), HttpMethod.GET,
                 request, String.class, params);
         return CompletableFuture.completedFuture(response.getStatusCode());

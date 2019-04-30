@@ -26,8 +26,10 @@ public class ScanServiceImpl implements ScanService {
 	private UserProperties userProperties;
 	private HtmlService htmlService;
 	private MailService mailService;
+	// Коллекциясайтов для регистрации
 	@Getter
 	private Map<String, SiteItem> register = new ConcurrentHashMap<>();
+	// Коллекция посольств
 	private Set<String> embassies = Sets.newConcurrentHashSet();
 
 	@Autowired
@@ -121,22 +123,23 @@ public class ScanServiceImpl implements ScanService {
 			return;
 		}
 
+		// Получаем список всег событий
 		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(html -> {
-			if(html == null) {
+			if (html == null) {
 				// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
 				return;
 			}
-
-			htmlService.checkEmbassies(html).thenAccept(map -> {
-				map.entrySet().stream().filter(e -> !embassies.contains(e.getKey())).forEach(e -> {
-						embassies.add(e.getKey());
-						log.info("Embassy detected! {}, uri: {}", e.getValue(), e.getKey());
+			// Проверяем, есть ли в текущем событии посольство, и не добавленно ли оно уже в наш список
+			htmlService.checkEmbassies(html).thenAccept(map ->
+					map.entrySet().stream().filter(element -> !embassies.contains(element.getKey())).forEach(embassy -> {
+						embassies.add(embassy.getKey());
+						log.info("Embassy detected! {}, uri: {}", embassy.getValue(), embassy.getKey());
 						userProperties.getUsers().stream().forEach(user ->
-							mailService.sendMessage("Embassy detected!",
-									String.format("Embassy detected! %s, uri: %s", e.getValue(), e.getKey()),
-									user.getEmail()));
-				});
-			});
+								mailService.sendMessage("Embassy detected!",
+										String.format("Embassy detected! %s, uri: %s", embassy.getValue(), embassy.getKey()),
+										user.getEmail()));
+					})
+			);
 		});
 	}
 }

@@ -28,6 +28,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -76,6 +77,7 @@ public class HtmlScanApplicationTests {
 		htmlService = new HtmlServiceImpl(null, properties);
 	}
 
+	// Тестируем отдельную раюоту проверки открытой регистрации в сервисе htmlService
 	@Test
 	public void checkOpenedTest() {
 		assertNotNull(htmlOpened);
@@ -92,6 +94,7 @@ public class HtmlScanApplicationTests {
 		});
 	}
 
+	// Этот тест просто для моего спокойствия
 	@Test
 	public void mapTest() {
 		String key = "http://test.ru";
@@ -117,14 +120,18 @@ public class HtmlScanApplicationTests {
 		assertEquals(item1, item4);
 	}
 
+	// Тест доступности всех REST-сервисов
 	@Test
     public void restTest() {
 	    val responseList = testRestTemplate.exchange("/htmlscan/list", HttpMethod.GET,
                 null, new ParameterizedTypeReference<List<String>>(){});
-	    assertEquals(responseList.getStatusCode(), HttpStatus.OK);
+	    assertEquals(HttpStatus.OK, responseList.getStatusCode());
         val responseString = testRestTemplate.getForEntity("/htmlscan/tasks", String.class);
-        assertEquals(responseString.getStatusCode(), HttpStatus.OK);
-    }
+        assertEquals(HttpStatus.OK, responseString.getStatusCode());
+		val responseMap = testRestTemplate.exchange("/htmlscan/events", HttpMethod.GET,
+				null, new ParameterizedTypeReference<Map<String, String>>(){});
+		assertEquals(HttpStatus.OK, responseMap.getStatusCode());
+	}
 
     @Test
 	public void parseTest() {
