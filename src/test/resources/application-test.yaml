@@ -4,9 +4,9 @@ spring:
 registration:
    users:
       -
-         name: Корней Яшма
-         phone: "+79164367895"
-         email: kornej.yashma@gmail.com
+         FIO: Корней Яшма
+         PHONE: "+79164367895"
+         EMAIL: kornej.yashma@gmail.com
 
 html:
    sites:

@@ -72,7 +72,7 @@ public class HtmlController {
     @PostMapping("/mailcheck")
     public void mailCheck(@RequestBody MailItem item) {
         userProperties.getUsers().stream().forEach(user ->
-                mailService.sendMessage(item.getSubject(), item.getMessage(), user.getEmail()));
+                mailService.sendMessage(item.getSubject(), item.getMessage(), user.getEMAIL()));
     }
 
     @GetMapping("/events")
@@ -85,5 +85,11 @@ public class HtmlController {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @PostMapping("/send_data")
+    public String sendData(@RequestParam("ADRES") String ADRES, @RequestParam("FIO") String FIO) {
+        log.info("ADRES: {}, FIO: {}", ADRES, FIO);
+        return FIO;
     }
 }

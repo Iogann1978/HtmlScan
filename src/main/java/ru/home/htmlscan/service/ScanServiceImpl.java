@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.config.UserProperties;
-import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
 
@@ -82,23 +81,19 @@ public class ScanServiceImpl implements ScanService {
 						item.setState(SiteState.REG_OPENED);
 						// Отправляем уведомление на почту
 						userProperties.getUsers().stream().forEach(user ->
-								mailService.sendMessage("Registration is opened", String.format("Registration for site %s is open!", uri), user.getEmail()));
+								mailService.sendMessage("Registration is opened", String.format("Registration for site %s is open!", uri), user.getEMAIL()));
 						log.info("Registration for site {} is open!", uri);
 						// Увеличиваем количество уведомлений на почту и попыток регистрации
 						item.sendedInc();
 						item.attempsInc();
 						// Пробуем зарегистрироваться
 						userProperties.getUsers().stream().forEach(user -> {
-							val reg = new RegisterItem();
-							reg.setFIO(user.getName());
-							reg.setEMAIL(user.getEmail());
-							reg.setPHONE(user.getPhone());
-							reg.form(html);
-							htmlService.register(reg).thenAccept(response -> {
+							val fields = user.form(html);
+							htmlService.register(fields).thenAccept(response -> {
 								if (response == HttpStatus.OK) {
 									// Регистрация вернула ответ 200, отправляем уведомление на почту
 									log.info("You has registered on site {}", uri);
-									mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", uri), user.getEmail());
+									mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", uri), user.getEMAIL());
 									// Увеличиваем количество уведомлений на почту и меняем статус
 									item.sendedInc();
 									item.setState(SiteState.REGISTERED);
@@ -138,7 +133,7 @@ public class ScanServiceImpl implements ScanService {
 						userProperties.getUsers().stream().forEach(user ->
 								mailService.sendMessage("Embassy detected!",
 										String.format("Embassy detected! %s, uri: %s", embassy.getValue(), embassy.getKey()),
-										user.getEmail()));
+										user.getEMAIL()));
 					})
 			);
 		});

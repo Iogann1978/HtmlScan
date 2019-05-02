@@ -17,7 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.home.htmlscan.config.HtmlProperties;
+import ru.home.htmlscan.config.UserProperties;
 import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
@@ -26,6 +28,7 @@ import ru.home.htmlscan.service.*;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +49,9 @@ public class HtmlScanApplicationTests {
 	@Autowired
 	private ResourceLoader resourceLoader;
 	@Autowired
-	private HtmlProperties properties;
+	private HtmlProperties htmlProperties;
+	@Autowired
+	private UserProperties userProperties;
 	@Autowired
 	private TestRestTemplate testRestTemplate;
 
@@ -74,7 +79,7 @@ public class HtmlScanApplicationTests {
 		when(testSender.createMimeMessage()).thenReturn(mimeMessage);
 
 		mailService = new MailServiceImpl(testSender);
-		htmlService = new HtmlServiceImpl(null, properties);
+		htmlService = new HtmlServiceImpl(null, htmlProperties);
 	}
 
 	// Тестируем отдельную раюоту проверки открытой регистрации в сервисе htmlService
@@ -83,7 +88,7 @@ public class HtmlScanApplicationTests {
 		assertNotNull(htmlOpened);
 		assertNotNull(htmlClosed);
 
-		properties.getSites().stream().forEach(uri -> {
+		htmlProperties.getSites().stream().forEach(uri -> {
 			try {
 				assertFalse(htmlService.checkHtml(htmlClosed).get());
 				assertTrue(htmlService.checkHtml(htmlOpened).get());
@@ -136,10 +141,17 @@ public class HtmlScanApplicationTests {
     @Test
 	public void parseTest() {
 		assertNotNull(htmlOpened);
+		assertNotNull(userProperties.getUsers());
 
-		val item = RegisterItem.get(htmlOpened);
-		log.info("registration item: {}", item);
-		assertNotNull(item);
+		userProperties.getUsers().stream().forEach( item -> {
+			val fields = item.form(htmlOpened);
+			log.info("registration item: {}", item);
+			log.info("registration fields: {}", fields);
+			val uri = UriComponentsBuilder.fromHttpUrl(htmlProperties.getUrireg())
+					.queryParams(fields).scheme("https").encode(StandardCharsets.UTF_8);
+			log.info("encoded uri={}", uri.toUriString());
+			assertNotNull(item);
+		});
 	}
 
 	@Test

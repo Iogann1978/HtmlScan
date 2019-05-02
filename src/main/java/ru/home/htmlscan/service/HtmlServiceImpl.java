@@ -8,15 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.home.htmlscan.config.HtmlProperties;
-import ru.home.htmlscan.model.RegisterItem;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -44,18 +42,20 @@ public class HtmlServiceImpl implements HtmlService {
     }
 
     @Async("htmlExecutor")
-    public CompletableFuture<HttpStatus> register(RegisterItem item) {
+    public CompletableFuture<HttpStatus> register(MultiValueMap<String, String> fields) {
+        val uriBuilder = UriComponentsBuilder.fromHttpUrl(properties.getUrireg())
+                .queryParams(fields);
+
         val headers = new HttpHeaders();
-        headers.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        val request = new HttpEntity<>(item, headers);
-        val params = new HashMap<String, String>();
-        params.put("ACTION", "set");
-        params.put("TIME_ID", item.getTIME_ID());
-        log.info("reg item: {}", item);
-        val response = restTemplate.exchange(properties.getUrireg(), HttpMethod.GET,
-                request, String.class, params);
-        log.info("Response: {]", response.getBody());
+        headers.setAccept(ImmutableList.of(MediaType.APPLICATION_FORM_URLENCODED));
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        val request = new HttpEntity<>(headers);
+        log.info("reg item: {}", fields);
+        val response = restTemplate.exchange(uriBuilder.build().encode().toUri(), HttpMethod.POST,
+                request, String.class);
+        if(response.hasBody()) {
+            log.info("Response: {]", response.getBody());
+        }
         return CompletableFuture.completedFuture(response.getStatusCode());
     }
 
