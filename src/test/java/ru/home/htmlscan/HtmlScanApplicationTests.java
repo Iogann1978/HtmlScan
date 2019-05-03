@@ -28,6 +28,8 @@ import ru.home.htmlscan.service.*;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
@@ -67,8 +69,8 @@ public class HtmlScanApplicationTests {
 		val siteOpened = resourceLoader.getResource("classpath:site_opened.html");
 		val siteClosed = resourceLoader.getResource("classpath:site_closed.html");
 		try {
-			htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()));
-			htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()));
+			htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()), StandardCharsets.UTF_8);
+			htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
@@ -145,8 +147,15 @@ public class HtmlScanApplicationTests {
 
 		userProperties.getUsers().stream().forEach( item -> {
 			val fields = item.form(htmlOpened);
+			fields.entrySet().stream().forEach(e -> {
+				try {
+					log.info("fields: {}={}", e.getKey(), URLEncoder.encode(e.getValue().get(0), "UTF-8"));
+				} catch (UnsupportedEncodingException e1) {
+					e1.printStackTrace();
+				}
+			});
 			log.info("registration item: {}", item);
-			log.info("registration fields: {}", fields);
+			//log.info("registration fields: {}", fields);
 			val uri = UriComponentsBuilder.fromHttpUrl(htmlProperties.getUrireg())
 					.queryParams(fields).scheme("https").encode(StandardCharsets.UTF_8);
 			log.info("encoded uri={}", uri.toUriString());
