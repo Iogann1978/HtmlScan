@@ -6,6 +6,7 @@ import java.util.Map;
 
 public interface ScanService {
     void scanRegister();
+    void scanEmbassies();
     void scanList();
     Map<String, SiteItem> getRegister();
 }

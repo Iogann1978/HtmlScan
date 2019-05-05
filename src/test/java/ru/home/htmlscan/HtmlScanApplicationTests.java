@@ -132,7 +132,7 @@ public class HtmlScanApplicationTests {
         val responseString = testRestTemplate.getForEntity("/htmlscan/tasks", String.class);
         assertEquals(HttpStatus.OK, responseString.getStatusCode());
 		val responseMap = testRestTemplate.exchange("/htmlscan/events", HttpMethod.GET,
-				null, new ParameterizedTypeReference<Map<String, String>>(){});
+				null, new ParameterizedTypeReference<Map<String, Map.Entry<String, SiteState>>>(){});
 		assertEquals(HttpStatus.OK, responseMap.getStatusCode());
 	}
 

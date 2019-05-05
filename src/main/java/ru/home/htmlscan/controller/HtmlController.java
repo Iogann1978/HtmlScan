@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.config.UserProperties;
 import ru.home.htmlscan.model.MailItem;
+import ru.home.htmlscan.model.SiteState;
 import ru.home.htmlscan.service.HtmlService;
 import ru.home.htmlscan.service.MailService;
 import ru.home.htmlscan.service.ScanService;
@@ -76,7 +77,7 @@ public class HtmlController {
     }
 
     @GetMapping("/events")
-    public Map<String, String> getEvents() {
+    public Map<String, Map.Entry<String, SiteState>> getEvents() {
         try {
             val html = htmlService.getHtml(htmlProperties.getUrilist()).get();
             return htmlService.getEvents(html).get();

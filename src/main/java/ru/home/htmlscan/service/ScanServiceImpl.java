@@ -81,7 +81,7 @@ public class ScanServiceImpl implements ScanService {
 						item.setState(SiteState.REG_OPENED);
 						// Отправляем уведомление на почту
 						userProperties.getUsers().stream().forEach(user ->
-								mailService.sendMessage("Registration is opened", String.format("Registration for site %s is open!", uri), user.getEMAIL()));
+								mailService.sendMessage("Registration is open", String.format("Registration for site %s is open!", uri), user.getEMAIL()));
 						log.info("Registration for site {} is open!", uri);
 						// Увеличиваем количество уведомлений на почту и попыток регистрации
 						item.sendedInc();
@@ -113,13 +113,13 @@ public class ScanServiceImpl implements ScanService {
     }
 
 	@Scheduled(fixedDelay = 60000)
-	public void scanList() {
+	public void scanEmbassies() {
 		if(htmlProperties.getUrilist() == null) {
 			log.error("[urilist] property is null");
 			return;
 		}
 
-		// Получаем список всег событий
+		// Получаем html страницы со всеми событиями
 		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(html -> {
 			if (html == null) {
 				// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
@@ -127,13 +127,53 @@ public class ScanServiceImpl implements ScanService {
 			}
 			// Проверяем, есть ли в текущем событии посольство, и не добавленно ли оно уже в наш список
 			htmlService.checkEmbassies(html).thenAccept(map ->
-					map.entrySet().stream().filter(element -> !embassies.contains(element.getKey())).forEach(embassy -> {
+					map.entrySet().stream().filter(element -> !embassies.contains(element.getKey()))
+							.forEach(embassy -> {
 						embassies.add(embassy.getKey());
 						log.info("Embassy detected! {}, uri: {}", embassy.getValue(), embassy.getKey());
 						userProperties.getUsers().stream().forEach(user ->
 								mailService.sendMessage("Embassy detected!",
 										String.format("Embassy detected! %s, uri: %s", embassy.getValue(), embassy.getKey()),
 										user.getEMAIL()));
+					})
+			);
+		});
+	}
+
+	@Scheduled(fixedDelay = 60000)
+	public void scanList() {
+		if(htmlProperties.getUrilist() == null) {
+			log.error("[urilist] property is null");
+			return;
+		}
+
+		// Получаем html страницы со всеми событиями
+		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(html -> {
+			if (html == null) {
+				// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
+				return;
+			}
+			// Проверяем, есть ли события открытые для регистрации
+			htmlService.getEvents(html).thenAccept(map ->
+					map.entrySet().stream().filter(element -> element.getValue().getValue() == SiteState.REG_OPENED)
+							.forEach(filteredElement -> {
+						val item = register.computeIfAbsent(filteredElement.getKey(), key ->
+								SiteItem.builder()
+									.visits(0L)
+									.attemps(0)
+									.sended(0)
+									.state(SiteState.ADDED)
+									.build());
+						log.info("Registration for site {} is open!", filteredElement.getKey());
+						if(item.getState() == SiteState.ADDED) {
+							userProperties.getUsers().stream().forEach(user ->
+									mailService.sendMessage("Registration is open",
+											String.format("Registration for site %s is open!", filteredElement.getKey()),
+											user.getEMAIL()));
+							item.sendedInc();
+							item.attempsInc();
+							item.setState(SiteState.REG_OPENED);
+						}
 					})
 			);
 		});
