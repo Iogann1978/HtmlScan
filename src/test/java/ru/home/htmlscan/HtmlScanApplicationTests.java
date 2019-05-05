@@ -17,10 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.util.UriComponentsBuilder;
 import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.config.UserProperties;
-import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
 import ru.home.htmlscan.service.*;
@@ -28,8 +26,6 @@ import ru.home.htmlscan.service.*;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
@@ -148,17 +144,9 @@ public class HtmlScanApplicationTests {
 		userProperties.getUsers().stream().forEach( item -> {
 			val fields = item.form(htmlOpened);
 			fields.entrySet().stream().forEach(e -> {
-				try {
-					log.info("fields: {}={}", e.getKey(), URLEncoder.encode(e.getValue().get(0), "UTF-8"));
-				} catch (UnsupportedEncodingException e1) {
-					e1.printStackTrace();
-				}
+					log.info("fields: {}={}", e.getKey(), e.getValue().get(0));
 			});
 			log.info("registration item: {}", item);
-			//log.info("registration fields: {}", fields);
-			val uri = UriComponentsBuilder.fromHttpUrl(htmlProperties.getUrireg())
-					.queryParams(fields).scheme("https").encode(StandardCharsets.UTF_8);
-			log.info("encoded uri={}", uri.toUriString());
 			assertNotNull(item);
 		});
 	}

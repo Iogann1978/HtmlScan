@@ -10,9 +10,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 import ru.home.htmlscan.config.HtmlProperties;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -43,16 +43,14 @@ public class HtmlServiceImpl implements HtmlService {
 
     @Async("htmlExecutor")
     public CompletableFuture<HttpStatus> register(MultiValueMap<String, String> fields) {
-        val uriBuilder = UriComponentsBuilder.fromHttpUrl(properties.getUrireg())
-                .queryParams(fields);
-
         val headers = new HttpHeaders();
         headers.setAccept(ImmutableList.of(MediaType.APPLICATION_FORM_URLENCODED));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAcceptCharset(ImmutableList.of(StandardCharsets.UTF_8));
         val request = new HttpEntity<>(headers);
         log.info("reg item: {}", fields);
-        val response = restTemplate.exchange(uriBuilder.build().encode().toUri(), HttpMethod.POST,
-                request, String.class);
+        val response = restTemplate.exchange(properties.getUrireg(), HttpMethod.POST,
+                request, String.class, fields);
         if(response.hasBody()) {
             log.info("Response: {]", response.getBody());
         }
