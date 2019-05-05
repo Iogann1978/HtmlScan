@@ -164,8 +164,8 @@ public class ScanServiceImpl implements ScanService {
 									.sended(0)
 									.state(SiteState.ADDED)
 									.build());
-						log.info("Registration for site {} is open!", filteredElement.getKey());
 						if(item.getState() == SiteState.ADDED) {
+							log.info("Registration for site {} is open!", filteredElement.getKey());
 							userProperties.getUsers().stream().forEach(user ->
 									mailService.sendMessage("Registration is open",
 											String.format("Registration for site %s is open!", filteredElement.getKey()),
