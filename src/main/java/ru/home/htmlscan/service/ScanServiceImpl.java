@@ -72,7 +72,7 @@ public class ScanServiceImpl implements ScanService {
 			item.visitsInc();
 
 			// Если сайт был только добавлен или регистрация на нём пока закрыта, проверяем его на регистрацию
-			if(item.getState() == SiteState.ADDED || item.getState() == SiteState.REG_CLOSED) {
+			if(item.getState().getNum() <= 2) {
 				htmlService.checkHtml(html).thenAccept(flag -> {
 					if(flag) {
 						// Регистрация открыта
@@ -96,7 +96,7 @@ public class ScanServiceImpl implements ScanService {
 									item.sendedInc();
 									item.setState(SiteState.REGISTERED);
 								} else {
-									// Регистрация не удалась, выводим причину нв лог
+									// Регистрация не удалась, выводим причину в лог
 									log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
 								}
 							});
@@ -126,13 +126,16 @@ public class ScanServiceImpl implements ScanService {
 			// Проверяем, есть ли в текущем событии посольство, и не добавленно ли оно уже в наш список
 			htmlService.checkEmbassies(html).thenAccept(map ->
 					map.entrySet().stream().forEach(embassy -> {
-						val item = register.computeIfAbsent(embassy.getKey(), key ->
-								SiteItem.builder()
-										.visits(0L)
-										.attemps(0)
-										.sended(0)
-										.state(SiteState.ADDED)
-										.build());
+						SiteItem item = register.computeIfAbsent(embassy.getKey(), key -> {
+							val siteItem = SiteItem.builder()
+									.visits(0L)
+									.attemps(0)
+									.sended(0)
+									.state(SiteState.ADDED)
+									.build();
+							log.info("Site {} has added to register", key);
+							return siteItem;
+						});
 						if(item.getState() == SiteState.ADDED) {
 							log.info("Embassy detected! {}, uri: {}", embassy.getValue(), embassy.getKey());
 							userProperties.getUsers().stream().forEach(user ->
@@ -141,7 +144,7 @@ public class ScanServiceImpl implements ScanService {
 											user.getEMAIL()));
 							item.sendedInc();
 							item.attempsInc();
-							item.setState(SiteState.REG_CLOSED);
+							item.setState(embassy.getValue().getValue());
 						}
 					})
 			);
@@ -165,13 +168,16 @@ public class ScanServiceImpl implements ScanService {
 			htmlService.getEvents(html).thenAccept(map ->
 					map.entrySet().stream().filter(element -> element.getValue().getValue() == SiteState.REG_OPENED)
 							.forEach(filteredElement -> {
-						val item = register.computeIfAbsent(filteredElement.getKey(), key ->
-								SiteItem.builder()
+						SiteItem item = register.computeIfAbsent(filteredElement.getKey(), key -> {
+							val siteItem = SiteItem.builder()
 									.visits(0L)
 									.attemps(0)
 									.sended(0)
 									.state(SiteState.ADDED)
-									.build());
+									.build();
+							log.info("Site {} has added to register", key);
+							return siteItem;
+						});
 						if(item.getState() == SiteState.ADDED) {
 							log.info("Registration for site {} is open!", filteredElement.getKey());
 							userProperties.getUsers().stream().forEach(user ->
@@ -180,7 +186,7 @@ public class ScanServiceImpl implements ScanService {
 											user.getEMAIL()));
 							item.sendedInc();
 							item.attempsInc();
-							item.setState(SiteState.REG_OPENED);
+							item.setState(filteredElement.getValue().getValue());
 						}
 					})
 			);
