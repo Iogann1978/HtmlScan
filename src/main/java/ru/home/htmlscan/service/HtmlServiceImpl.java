@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.model.SiteState;
@@ -46,7 +45,7 @@ public class HtmlServiceImpl implements HtmlService {
     }
 
     @Async("htmlExecutor")
-    public CompletableFuture<HttpStatus> register(MultiValueMap<String, String> fields) {
+    public CompletableFuture<HttpStatus> register(Map<String, String> fields) {
         val headers = new HttpHeaders();
         headers.setAccept(ImmutableList.of(MediaType.APPLICATION_FORM_URLENCODED));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -59,7 +58,7 @@ public class HtmlServiceImpl implements HtmlService {
         val response = restTemplate.exchange(properties.getUrireg(), HttpMethod.POST,
                 request, String.class, fields);
         if(response.hasBody()) {
-            log.info("Response: {]", response.getBody());
+            log.info("Response: {}", response.getBody());
         }
         return CompletableFuture.completedFuture(response.getStatusCode());
     }

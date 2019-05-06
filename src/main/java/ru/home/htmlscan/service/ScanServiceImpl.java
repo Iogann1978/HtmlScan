@@ -28,8 +28,6 @@ public class ScanServiceImpl implements ScanService {
 	// Коллекциясайтов для регистрации
 	@Getter
 	private Map<String, SiteItem> register = new ConcurrentHashMap<>();
-	// Коллекция посольств
-	private Set<String> embassies = Sets.newConcurrentHashSet();
 
 	@Autowired
     public ScanServiceImpl(HtmlProperties htmlProperties, UserProperties userProperties, HtmlService htmlService, MailService mailService) {
@@ -127,14 +125,24 @@ public class ScanServiceImpl implements ScanService {
 			}
 			// Проверяем, есть ли в текущем событии посольство, и не добавленно ли оно уже в наш список
 			htmlService.checkEmbassies(html).thenAccept(map ->
-					map.entrySet().stream().filter(element -> !embassies.contains(element.getKey()))
-							.forEach(embassy -> {
-						embassies.add(embassy.getKey());
-						log.info("Embassy detected! {}, uri: {}", embassy.getValue(), embassy.getKey());
-						userProperties.getUsers().stream().forEach(user ->
-								mailService.sendMessage("Embassy detected!",
-										String.format("Embassy detected! %s, uri: %s", embassy.getValue(), embassy.getKey()),
-										user.getEMAIL()));
+					map.entrySet().stream().forEach(embassy -> {
+						val item = register.computeIfAbsent(embassy.getKey(), key ->
+								SiteItem.builder()
+										.visits(0L)
+										.attemps(0)
+										.sended(0)
+										.state(SiteState.ADDED)
+										.build());
+						if(item.getState() == SiteState.ADDED) {
+							log.info("Embassy detected! {}, uri: {}", embassy.getValue(), embassy.getKey());
+							userProperties.getUsers().stream().forEach(user ->
+									mailService.sendMessage("Embassy detected!",
+											String.format("Embassy detected! %s, uri: %s", embassy.getValue(), embassy.getKey()),
+											user.getEMAIL()));
+							item.sendedInc();
+							item.attempsInc();
+							item.setState(SiteState.REG_CLOSED);
+						}
 					})
 			);
 		});

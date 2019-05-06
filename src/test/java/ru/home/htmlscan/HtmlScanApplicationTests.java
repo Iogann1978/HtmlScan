@@ -144,7 +144,7 @@ public class HtmlScanApplicationTests {
 		userProperties.getUsers().stream().forEach( item -> {
 			val fields = item.form(htmlOpened);
 			fields.entrySet().stream().forEach(e -> {
-					log.info("fields: {}={}", e.getKey(), e.getValue().get(0));
+					log.info("fields: {}={}", e.getKey(), e.getValue());
 			});
 			log.info("registration item: {}", item);
 			assertNotNull(item);

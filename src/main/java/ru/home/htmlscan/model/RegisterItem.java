@@ -3,12 +3,12 @@ package ru.home.htmlscan.model;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @ToString
@@ -19,37 +19,37 @@ public class RegisterItem {
     @NonNull
     private String FIO, PHONE, EMAIL;
 
-    public MultiValueMap<String, String> form(String html) {
+    public Map<String, String> form(String html) {
         val form = Jsoup.parse(html).selectFirst("form");
-        val fields = new LinkedMultiValueMap<String, String>();
+        val fields = new HashMap<String, String>();
         form.getAllElements().stream()
                 .filter(element -> !element.attr("name").isEmpty())
                 .forEach(element_filtered -> {
                     val key = element_filtered.attr("name");
                     switch(key) {
                         case "FIO":
-                            fields.add(key, encodeField(FIO));
+                            fields.put(key, encodeField(FIO));
                             break;
                         case "PHONE":
-                            fields.add(key, encodeField(PHONE));
+                            fields.put(key, encodeField(PHONE));
                             break;
                         case "EMAIL":
-                            fields.add(key, encodeField(EMAIL));
+                            fields.put(key, encodeField(EMAIL));
                             break;
                         case "PASSPORT_NUMBER":
-                            fields.add(key, encodeField(PASSPORT_NUMBER));
+                            fields.put(key, encodeField(PASSPORT_NUMBER));
                             break;
                         case "PASSPORT_GET":
-                            fields.add(key, encodeField(PASSPORT_GET));
+                            fields.put(key, encodeField(PASSPORT_GET));
                             break;
                         case "PASSPORT_GET_DATE":
-                            fields.add(key, encodeField(PASSPORT_GET_DATE));
+                            fields.put(key, encodeField(PASSPORT_GET_DATE));
                             break;
                         case "YEAR":
-                            fields.add(key, encodeField(YEAR));
+                            fields.put(key, encodeField(YEAR));
                             break;
                         default:
-                            fields.add(key, encodeField(element_filtered.attr("value")));
+                            fields.put(key, encodeField(element_filtered.attr("value")));
                             break;
                     }
                 });
