@@ -80,23 +80,6 @@ public class HtmlScanApplicationTests {
 		htmlService = new HtmlServiceImpl(null, htmlProperties);
 	}
 
-	// Тестируем отдельную раюоту проверки открытой регистрации в сервисе htmlService
-	@Test
-	public void checkOpenedTest() {
-		assertNotNull(htmlOpened);
-		assertNotNull(htmlClosed);
-
-		htmlProperties.getSites().stream().forEach(uri -> {
-			try {
-				assertFalse(htmlService.checkHtml(htmlClosed).get());
-				assertTrue(htmlService.checkHtml(htmlOpened).get());
-			} catch (InterruptedException | ExecutionException e) {
-				log.error(e.getMessage());
-				e.printStackTrace();
-			}
-		});
-	}
-
 	// Этот тест просто для моего спокойствия
 	@Test
 	public void mapTest() {

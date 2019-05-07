@@ -8,8 +8,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface HtmlService {
     CompletableFuture<String> getHtml(String url);
-    CompletableFuture<Boolean> checkHtml(String html);
     CompletableFuture<HttpStatus> register(Map<String, String> fields);
-    CompletableFuture<Map<String, Map.Entry<String, SiteState>>> checkEmbassies(String html);
     CompletableFuture<Map<String, Map.Entry<String, SiteState>>> getEvents(String html);
 }

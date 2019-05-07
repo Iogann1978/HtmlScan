@@ -21,16 +21,15 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HtmlServiceImpl implements HtmlService {
     private RestTemplate restTemplate;
-    private HtmlProperties properties;
-    private static final String phraseReg = ">Регистрация<", phraseEmb = "Посол",
-            classNameList = "events_gallery__item__col",
+    private HtmlProperties htmlProperties;
+    private static final String classNameList = "events_gallery__item__col",
             classNameItem = "events_gallery__item__body",
             classNameHidden = "hidden-xs-up";
 
     @Autowired
-    public HtmlServiceImpl(RestTemplate restTemplate, HtmlProperties properties) {
+    public HtmlServiceImpl(RestTemplate restTemplate, HtmlProperties htmlProperties) {
         this.restTemplate = restTemplate;
-        this.properties = properties;
+        this.htmlProperties = htmlProperties;
     }
 
     @Async("htmlExecutor")
@@ -55,28 +54,12 @@ public class HtmlServiceImpl implements HtmlService {
                 .collect(Collectors.toList()));
         val request = new HttpEntity<>(body, headers);
         log.info("reg item: {}", fields);
-        val response = restTemplate.exchange(properties.getUrireg(), HttpMethod.POST,
+        val response = restTemplate.exchange(htmlProperties.getUrireg(), HttpMethod.POST,
                 request, String.class, fields);
         if(response.hasBody()) {
             log.info("Response: {}", response.getBody());
         }
         return CompletableFuture.completedFuture(response.getStatusCode());
-    }
-
-    @Async("htmlExecutor")
-    public CompletableFuture<Boolean> checkHtml(String html) {
-        if(html.contains(phraseReg)) {
-            return CompletableFuture.completedFuture(true);
-        } else {
-            return CompletableFuture.completedFuture(false);
-        }
-    }
-
-    @Async("htmlExecutor")
-    public CompletableFuture<Map<String, Map.Entry<String, SiteState>>> checkEmbassies(String html) {
-        return getEvents(html).thenApply(mapList -> mapList.entrySet().stream()
-                .filter(entry -> entry.getValue().getKey().contains(phraseEmb))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     @Async("htmlExecutor")
@@ -86,10 +69,10 @@ public class HtmlServiceImpl implements HtmlService {
                 .stream().forEach(element -> {
                     val ref = element.select("a." + classNameItem);
                     if(element.hasClass(classNameHidden) && ref != null) {
-                        map.put(ref.attr("href"),
+                        map.put(htmlProperties.getDomain() + ref.attr("href"),
                                 new AbstractMap.SimpleImmutableEntry<>(ref.text(), SiteState.REG_CLOSED));
                     } else {
-                        map.put(ref.attr("href"),
+                        map.put(htmlProperties.getDomain() + ref.attr("href"),
                                 new AbstractMap.SimpleImmutableEntry<>(ref.text(), SiteState.REG_OPENED));
                     }
                 });

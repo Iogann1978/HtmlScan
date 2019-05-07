@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 @Data
 public class HtmlProperties {
 	private List<String> sites = new ArrayList<String>();
+	private String domain;
 	private String urireg;
 	private String urilist;
 }

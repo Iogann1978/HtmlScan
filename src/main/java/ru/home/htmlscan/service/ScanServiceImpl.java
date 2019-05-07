@@ -25,9 +25,10 @@ public class ScanServiceImpl implements ScanService {
 	private UserProperties userProperties;
 	private HtmlService htmlService;
 	private MailService mailService;
-	// Коллекциясайтов для регистрации
+	// Коллекция сайтов для регистрации
 	@Getter
 	private Map<String, SiteItem> register = new ConcurrentHashMap<>();
+	private static final String phraseEmb = "Посол";
 
 	@Autowired
     public ScanServiceImpl(HtmlProperties htmlProperties, UserProperties userProperties, HtmlService htmlService, MailService mailService) {
@@ -37,159 +38,105 @@ public class ScanServiceImpl implements ScanService {
 	    this.mailService = mailService;
     }
 
-    @Scheduled(fixedDelay = 5000)
-    public void scanRegister() {
-	    if(htmlProperties.getSites() == null) {
-	    	// Список сайтов не задан - уходим
-	        log.error("Site's list is null");
-	        return;
-        }
-	    if(userProperties.getUsers() == null) {
-	    	// Список пользователей не задан - уходим
-			log.error("User's list is null");
-			return;
-		}
-
-        // Перебираем все сайты из списка
-		htmlProperties.getSites().stream().forEach(uri -> htmlService.getHtml(uri).thenAccept(html -> {
-        	if(html == null) {
-        		// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
-        		return;
-			}
-
-        	// Если сайта нет в списке отслеживаемых, то добавляем его туда и возвращаем вставленный экземпляр
-			SiteItem item = register.computeIfAbsent(uri, key -> {
-				val siteItem = SiteItem.builder()
-						.attemps(0)
-						.sended(0)
-						.visits(0L)
-						.state(SiteState.ADDED)
-						.build();
-				log.info("Site {} has added to register", uri);
-				return siteItem;
-			});
-			// Поскольку мы уже получили его html, увеличиваем количество посещений
-			item.visitsInc();
-
-			// Если сайт был только добавлен или регистрация на нём пока закрыта, проверяем его на регистрацию
-			if(item.getState().getNum() <= 2) {
-				htmlService.checkHtml(html).thenAccept(flag -> {
-					if(flag) {
-						// Регистрация открыта
-						item.setState(SiteState.REG_OPENED);
-						// Отправляем уведомление на почту
-						userProperties.getUsers().stream().forEach(user ->
-								mailService.sendMessage("Registration is open", String.format("Registration for site %s is open!", uri), user.getEMAIL()));
-						log.info("Registration for site {} is open!", uri);
-						// Увеличиваем количество уведомлений на почту и попыток регистрации
-						item.sendedInc();
-						item.attempsInc();
-						// Пробуем зарегистрироваться
-						userProperties.getUsers().stream().forEach(user -> {
-							val fields = user.form(html);
-							htmlService.register(fields).thenAccept(response -> {
-								if (response == HttpStatus.OK) {
-									// Регистрация вернула ответ 200, отправляем уведомление на почту
-									log.info("You has registered on site {}", uri);
-									mailService.sendMessage("Successful registration", String.format("You has registered on site %s!", uri), user.getEMAIL());
-									// Увеличиваем количество уведомлений на почту и меняем статус
-									item.sendedInc();
-									item.setState(SiteState.REGISTERED);
-								} else {
-									// Регистрация не удалась, выводим причину в лог
-									log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
-								}
-							});
-						});
-					} else if(item.getState() != SiteState.REGISTERED && item.getState() != SiteState.REG_CLOSED) {
-						// Если регистрация закрыта и сайт в состоянии Добавлени или Открыт для регистрации, то меняем его статус
-						item.setState(SiteState.REG_CLOSED);
-					}
-				});
-			};
-		}));
-    }
-
-	@Scheduled(fixedDelay = 60000)
-	public void scanEmbassies() {
-		if(htmlProperties.getUrilist() == null) {
-			log.error("[urilist] property is null");
-			return;
-		}
-
-		// Получаем html страницы со всеми событиями
-		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(html -> {
-			if (html == null) {
-				// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
-				return;
-			}
-			// Проверяем, есть ли в текущем событии посольство, и не добавленно ли оно уже в наш список
-			htmlService.checkEmbassies(html).thenAccept(map ->
-					map.entrySet().stream().forEach(embassy -> {
-						SiteItem item = register.computeIfAbsent(embassy.getKey(), key -> {
-							val siteItem = SiteItem.builder()
-									.visits(0L)
-									.attemps(0)
-									.sended(0)
-									.state(SiteState.ADDED)
-									.build();
-							log.info("Site {} has added to register", key);
-							return siteItem;
-						});
-						if(item.getState() == SiteState.ADDED) {
-							log.info("Embassy detected! {}, uri: {}", embassy.getValue(), embassy.getKey());
-							userProperties.getUsers().stream().forEach(user ->
-									mailService.sendMessage("Embassy detected!",
-											String.format("Embassy detected! %s, uri: %s", embassy.getValue(), embassy.getKey()),
-											user.getEMAIL()));
-							item.sendedInc();
-							item.attempsInc();
-							item.setState(embassy.getValue().getValue());
-						}
-					})
-			);
-		});
-	}
-
-	@Scheduled(fixedDelay = 60000)
+	@Scheduled(fixedDelay = 5000)
 	public void scanList() {
 		if(htmlProperties.getUrilist() == null) {
-			log.error("[urilist] property is null");
+			log.error("[html.urilist] property is null");
+			return;
+		}
+		if(userProperties.getUsers() == null) {
+			// Список пользователей не задан - уходим
+			log.error("[registration.users] property is null");
 			return;
 		}
 
 		// Получаем html страницы со всеми событиями
-		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(html -> {
-			if (html == null) {
+		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(htmlEvents -> {
+			if (htmlEvents == null) {
 				// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
 				return;
 			}
-			// Проверяем, есть ли события открытые для регистрации
-			htmlService.getEvents(html).thenAccept(map ->
-					map.entrySet().stream().filter(element -> element.getValue().getValue() == SiteState.REG_OPENED)
-							.forEach(filteredElement -> {
-						SiteItem item = register.computeIfAbsent(filteredElement.getKey(), key -> {
-							val siteItem = SiteItem.builder()
-									.visits(0L)
-									.attemps(0)
-									.sended(0)
-									.state(SiteState.ADDED)
-									.build();
-							log.info("Site {} has added to register", key);
-							return siteItem;
+
+			htmlService.getEvents(htmlEvents).thenAccept(map -> {
+				// Проверяем, есть ли события с посольствами
+				map.entrySet().stream().filter(element -> element.getValue().getKey().contains(phraseEmb))
+						.forEach(embassy -> {
+							SiteItem item = register.computeIfAbsent(embassy.getKey(), key -> {
+								val siteItem = SiteItem.builder()
+										.visits(0L)
+										.attemps(0)
+										.sended(0)
+										.state(SiteState.ADDED)
+										.build();
+								log.info("Site {} has added to register", key);
+								return siteItem;
+							});
+							if(item.getState() == SiteState.ADDED) {
+								log.info("Embassy detected! {}, uri: {}", embassy.getValue().getKey(), embassy.getKey());
+								userProperties.getUsers().stream().forEach(user ->
+										mailService.sendMessage("Embassy detected!",
+												String.format("Embassy detected! %s, uri: %s", embassy.getValue(), embassy.getKey()),
+												user.getEMAIL()));
+								item.sendedInc();
+								item.attempsInc();
+								item.setState(SiteState.SENDED);
+							}
 						});
-						if(item.getState() == SiteState.ADDED) {
-							log.info("Registration for site {} is open!", filteredElement.getKey());
-							userProperties.getUsers().stream().forEach(user ->
-									mailService.sendMessage("Registration is open",
-											String.format("Registration for site %s is open!", filteredElement.getKey()),
-											user.getEMAIL()));
-							item.sendedInc();
-							item.attempsInc();
-							item.setState(filteredElement.getValue().getValue());
-						}
-					})
-			);
+
+				// Проверяем, есть ли события открытые для регистрации
+				map.entrySet().stream().filter(element -> element.getValue().getValue() == SiteState.REG_OPENED)
+						.forEach(filteredElement -> {
+							val uri = filteredElement.getKey();
+							// Если сайта нет в нашем реестре, то добавляем его, иначе возвращаем значение из реестра
+							SiteItem item = register.computeIfAbsent(uri, key -> {
+								val siteItem = SiteItem.builder()
+										.visits(0L)
+										.attemps(0)
+										.sended(0)
+										.state(SiteState.ADDED)
+										.build();
+								log.info("Site {} has added to register", key);
+								return siteItem;
+							});
+
+							// Если событие ещё не регистрировались и не отправлялось оповещение на почту
+							if (item.getState() != SiteState.SENDED && item.getState() != SiteState.REGISTERED) {
+								log.info("Registration for site {} is open!", uri);
+								userProperties.getUsers().stream().forEach(user ->
+										mailService.sendMessage("Registration is open",
+												String.format("Registration for site %s is open!", uri),
+												user.getEMAIL()));
+								item.sendedInc();
+								item.attempsInc();
+								item.setState(SiteState.SENDED);
+							}
+
+							// Сайт есть в списке для регистрации и он ещё не регистрировался
+							if (item.getState() != SiteState.REGISTERED && htmlProperties.getSites().contains(filteredElement.getKey())) {
+								// Пробуем зарегистрироваться
+								htmlService.getHtml(uri).thenAccept(htmlReg -> userProperties.getUsers().stream()
+									.forEach(user -> {
+										item.visitsInc();
+										val fields = user.form(htmlReg);
+										htmlService.register(fields).thenAccept(response -> {
+											if (response == HttpStatus.OK) {
+												// Регистрация вернула ответ 200, отправляем уведомление на почту
+												log.info("You has registered on site {}", filteredElement.getKey());
+												mailService.sendMessage("Successful registration",
+													String.format("You has registered on site %s!", filteredElement.getKey()), user.getEMAIL());
+												// Увеличиваем количество уведомлений на почту и меняем статус
+												item.sendedInc();
+												item.setState(SiteState.REGISTERED);
+											} else {
+												// Регистрация не удалась, выводим причину в лог
+												log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
+											}
+										});
+									})
+								);
+							}
+						});
+			});
 		});
 	}
 }
