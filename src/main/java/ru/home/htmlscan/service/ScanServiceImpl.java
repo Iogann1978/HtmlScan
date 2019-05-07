@@ -79,7 +79,7 @@ public class ScanServiceImpl implements ScanService {
 												user.getEMAIL()));
 								item.sendedInc();
 								item.attempsInc();
-								item.setState(SiteState.SENDED);
+								item.setState(SiteState.EMBASSY_SENDED);
 							}
 						});
 
@@ -100,7 +100,7 @@ public class ScanServiceImpl implements ScanService {
 							});
 
 							// Если событие ещё не регистрировались и не отправлялось оповещение на почту
-							if (item.getState() != SiteState.SENDED && item.getState() != SiteState.REGISTERED) {
+							if (item.getState() != SiteState.OPEN_SENDED && item.getState() != SiteState.REGISTERED) {
 								log.info("Registration for site {} is open!", uri);
 								userProperties.getUsers().stream().forEach(user ->
 										mailService.sendMessage("Registration is open",
@@ -108,7 +108,7 @@ public class ScanServiceImpl implements ScanService {
 												user.getEMAIL()));
 								item.sendedInc();
 								item.attempsInc();
-								item.setState(SiteState.SENDED);
+								item.setState(SiteState.OPEN_SENDED);
 							}
 
 							// Сайт есть в списке для регистрации и он ещё не регистрировался
