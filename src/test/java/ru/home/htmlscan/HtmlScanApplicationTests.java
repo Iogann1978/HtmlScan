@@ -82,7 +82,7 @@ public class HtmlScanApplicationTests {
 			htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()), StandardCharsets.UTF_8);
 			htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()), StandardCharsets.UTF_8);
 			htmlList = new String(Files.readAllBytes(siteList.getFile().toPath()), StandardCharsets.UTF_8);
-			htmlMultiForm = new String(Files.readAllBytes(siteList.getFile().toPath()), StandardCharsets.UTF_8);
+			htmlMultiForm = new String(Files.readAllBytes(siteMultiForm.getFile().toPath()), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
@@ -113,7 +113,7 @@ public class HtmlScanApplicationTests {
 				.thenReturn(CompletableFuture.completedFuture(htmlOpened));
 		 */
 		when(htmlMock.getHtml(url))
-				.thenReturn(CompletableFuture.completedFuture(htmlOpened));
+				.thenReturn(CompletableFuture.completedFuture(htmlMultiForm));
 		when(htmlMock.getHtml(htmlProperties.getUrilist()))
 				.thenReturn(CompletableFuture.completedFuture(htmlList));
 		when(htmlMock.getEvents(htmlList))
@@ -183,7 +183,7 @@ public class HtmlScanApplicationTests {
 			log.info("registration item: {}", item);
 			assertNotNull(item);
 			assertNull(item.form(htmlClosed));
-			log.info("rrrr: {}", item.form(htmlMultiForm));
+			assertNotNull(item.form(htmlMultiForm));
 		});
 	}
 }

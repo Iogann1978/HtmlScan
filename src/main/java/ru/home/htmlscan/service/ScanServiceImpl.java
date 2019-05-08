@@ -117,12 +117,11 @@ public class ScanServiceImpl implements ScanService {
 									// Пробуем зарегистрироваться
 									htmlService.getHtml(uri).thenAccept(htmlReg -> {
 										if(htmlReg == null) {
-											log.error("html is null!");
+											log.error("html for uri={} is null!", uri);
 											return;
 										}
 
-										userProperties.getUsers().stream()
-										.forEach(user -> {
+										userProperties.getUsers().stream().forEach(user -> {
 											item.visitsInc();
 											val fields = user.form(htmlReg);
 											if(fields == null) {
@@ -133,9 +132,9 @@ public class ScanServiceImpl implements ScanService {
 											htmlService.register(fields).thenAccept(response -> {
 												if (response == HttpStatus.OK) {
 													// Регистрация вернула ответ 200, отправляем уведомление на почту
-													log.info("You has registered on site {}", filteredElement.getKey());
+													log.info("You has registered on site {}", uri);
 													mailService.sendMessage("Successful registration",
-														String.format("You has registered on site %s!", filteredElement.getKey()), user.getEMAIL());
+														String.format("You has registered on site %s!", uri), user.getEMAIL());
 													// Увеличиваем количество уведомлений на почту и меняем статус
 													item.sendedInc();
 													item.setState(SiteState.REGISTERED);
