@@ -6,10 +6,12 @@ import org.jsoup.Jsoup;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpMethod;
@@ -28,19 +30,21 @@ import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@PropertySource("classpath:application-test.yaml")
 @Slf4j
 public class HtmlScanApplicationTests {
 
@@ -55,19 +59,28 @@ public class HtmlScanApplicationTests {
 
 	@Mock
 	private JavaMailSender testSender;
+	@Mock
+	private HtmlProperties htmlPropMock;
+	@Mock
+	private UserProperties userPropMock;
+	@Mock
+	private HtmlService htmlMock;
+	@Mock
+	private MailService mailMock;
+	@InjectMocks
+	private ScanServiceImpl scanService;
 
-	private HtmlService htmlService;
-	private MailService mailService;
-	private String htmlOpened, htmlClosed;
+	private String htmlOpened, htmlClosed, htmlList;
 
 	@Before
 	public void setUp() {
-		log.info("sites: {}", htmlProperties.getSites());
 		val siteOpened = resourceLoader.getResource("classpath:site_opened.html");
 		val siteClosed = resourceLoader.getResource("classpath:site_closed.html");
+		val siteList = resourceLoader.getResource("classpath:events_list.html");
 		try {
 			htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()), StandardCharsets.UTF_8);
 			htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()), StandardCharsets.UTF_8);
+			htmlList = new String(Files.readAllBytes(siteList.getFile().toPath()), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
@@ -76,9 +89,40 @@ public class HtmlScanApplicationTests {
 		val mimeMessage = new MimeMessage((Session) null);
 		doNothing().when(testSender).send(any(MimeMessage.class));
 		when(testSender.createMimeMessage()).thenReturn(mimeMessage);
+	}
 
-		mailService = new MailServiceImpl(testSender);
-		htmlService = new HtmlServiceImpl(null, htmlProperties);
+	@Test
+	public void mainTest() {
+		val url = "https://dni-naslediya.ru/calendar/object/lektsiya-voprosy-sokhraneniya-promyshlennoy-arkhitektury-moskvy/";
+		val map = new HashMap<String, Map.Entry<String, SiteState>>() {
+			{
+				put(url, new AbstractMap.SimpleImmutableEntry<>("Test", SiteState.REG_OPENED));
+			}
+		};
+
+		when(htmlPropMock.getDomain()).thenReturn(htmlProperties.getDomain());
+		when(htmlPropMock.getSites()).thenReturn(htmlProperties.getSites());
+		when(htmlPropMock.getUrilist()).thenReturn(htmlProperties.getUrilist());
+		when(htmlPropMock.getUrireg()).thenReturn(htmlProperties.getUrireg());
+		when(userPropMock.getUsers()).thenReturn(userProperties.getUsers());
+
+		when(htmlMock.getHtml(url))
+				.thenReturn(CompletableFuture.completedFuture(htmlOpened));
+		when(htmlMock.getHtml(htmlProperties.getUrilist()))
+				.thenReturn(CompletableFuture.completedFuture(htmlList));
+		when(htmlMock.getEvents(htmlList))
+				.thenReturn(CompletableFuture.completedFuture(map));
+		when(htmlMock.register(anyMap()))
+				.thenReturn(CompletableFuture.completedFuture(HttpStatus.OK));
+
+		doNothing().when(mailMock).sendMessage(anyString(), anyString(), anyString());
+
+		scanService.scanList();
+		verify(htmlMock).getHtml(url);
+		verify(htmlMock).getHtml(htmlProperties.getUrilist());
+		verify(htmlMock).register(anyMap());
+		verify(mailMock, times(2)).sendMessage(anyString(), anyString(), anyString());
+		assertEquals(1, scanService.getRegister().size());
 	}
 
 	// Этот тест просто для моего спокойствия

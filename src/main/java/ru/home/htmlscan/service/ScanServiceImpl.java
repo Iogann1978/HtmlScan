@@ -113,7 +113,7 @@ public class ScanServiceImpl implements ScanService {
 
 							// Сайт есть в списке для регистрации и он ещё не регистрировался
 							if (item.getState() != SiteState.REGISTERED &&
-									(htmlProperties.getSites().contains(filteredElement.getKey()) || htmlProperties.getSites().isEmpty())) {
+									(htmlProperties.getSites().contains(uri) || htmlProperties.getSites().isEmpty())) {
 								// Пробуем зарегистрироваться
 								htmlService.getHtml(uri).thenAccept(htmlReg -> userProperties.getUsers().stream()
 									.forEach(user -> {
