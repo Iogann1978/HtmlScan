@@ -62,6 +62,7 @@ public class HtmlScanApplicationTests {
 
 	@Before
 	public void setUp() {
+		log.info("sites: {}", htmlProperties.getSites());
 		val siteOpened = resourceLoader.getResource("classpath:site_opened.html");
 		val siteClosed = resourceLoader.getResource("classpath:site_closed.html");
 		try {

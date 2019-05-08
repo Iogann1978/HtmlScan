@@ -9,9 +9,6 @@ registration:
          EMAIL: kornej.yashma@gmail.com
 
 html:
-   sites:
-      - https://test1.ru
-      - https://test2.ru
 
    mail:
       host: smtp.gmail.com

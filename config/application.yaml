@@ -13,14 +13,6 @@ html:
    domain: https://dni-naslediya.ru
    urilist: https://dni-naslediya.ru/calendar/free/
    urireg: https://dni-naslediya.ru/calendar/cr2019.php
-   sites:
-      - https://dni-naslediya.ru/calendar/object/vysoko-petrovskiy-monastyr/
-      - https://dni-naslediya.ru/calendar/object/novodeviche-kladbishche/
-      - https://dni-naslediya.ru/calendar/object/gorodskaya-usadba-e-i-vasilchikovoy-s-a-obolenskogo-n-f-fon-mekk-xix-v/
-      - https://dni-naslediya.ru/calendar/object/novoekaterininskaya-bolnitsa-u-petrovskikh-vorot-/
-      - https://dni-naslediya.ru/calendar/object/usadba-xviii-xix-vv-glavnyy-dom/
-      - https://dni-naslediya.ru/calendar/object/gostinitsa-ukraina-1950-1956-gg-arkh-mordvinov-a-g-inzh-krasilnikov-p/
-      - https://dni-naslediya.ru/calendar/object/osobnyak-lista/
 
 spring:
    mail:
