@@ -2,7 +2,6 @@ package ru.home.htmlscan;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.jsoup.Jsoup;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -177,17 +176,5 @@ public class HtmlScanApplicationTests {
 			log.info("registration item: {}", item);
 			assertNotNull(item);
 		});
-	}
-
-	@Test
-	public void testEventList() {
-		val siteEventList = resourceLoader.getResource("classpath:events_list.html");
-		try {
-			String htmllist = new String(Files.readAllBytes(siteEventList.getFile().toPath()));
-			Jsoup.parse(htmllist).getElementsByClass("events_gallery__item__body").forEach(e -> log.info("a={}, href={}", e.text(), e.attr("href")));
-		} catch (IOException e) {
-			log.error(e.getMessage());
-			e.printStackTrace();
-		}
 	}
 }
