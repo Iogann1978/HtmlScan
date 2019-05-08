@@ -21,6 +21,10 @@ public class RegisterItem {
 
     public Map<String, String> form(String html) {
         val form = Jsoup.parse(html).selectFirst("form");
+        if(form == null) {
+            return null;
+        }
+
         val fields = new HashMap<String, String>();
         form.getAllElements().stream()
                 .filter(element -> !element.attr("name").isEmpty())

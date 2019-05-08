@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.home.htmlscan.config.HtmlProperties;
 import ru.home.htmlscan.config.UserProperties;
+import ru.home.htmlscan.model.RegisterItem;
 import ru.home.htmlscan.model.SiteItem;
 import ru.home.htmlscan.model.SiteState;
 import ru.home.htmlscan.service.*;
@@ -69,17 +70,19 @@ public class HtmlScanApplicationTests {
 	@InjectMocks
 	private ScanServiceImpl scanService;
 
-	private String htmlOpened, htmlClosed, htmlList;
+	private String htmlOpened, htmlClosed, htmlList, htmlMultiForm;
 
 	@Before
 	public void setUp() {
 		val siteOpened = resourceLoader.getResource("classpath:site_opened.html");
 		val siteClosed = resourceLoader.getResource("classpath:site_closed.html");
 		val siteList = resourceLoader.getResource("classpath:events_list.html");
+		val siteMultiForm = resourceLoader.getResource("classpath:site_multi_reg.html");
 		try {
 			htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()), StandardCharsets.UTF_8);
 			htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()), StandardCharsets.UTF_8);
 			htmlList = new String(Files.readAllBytes(siteList.getFile().toPath()), StandardCharsets.UTF_8);
+			htmlMultiForm = new String(Files.readAllBytes(siteList.getFile().toPath()), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
@@ -105,6 +108,10 @@ public class HtmlScanApplicationTests {
 		when(htmlPropMock.getUrireg()).thenReturn(htmlProperties.getUrireg());
 		when(userPropMock.getUsers()).thenReturn(userProperties.getUsers());
 
+		/*
+		when(htmlMock.getHtml(url))
+				.thenReturn(CompletableFuture.completedFuture(htmlOpened));
+		 */
 		when(htmlMock.getHtml(url))
 				.thenReturn(CompletableFuture.completedFuture(htmlOpened));
 		when(htmlMock.getHtml(htmlProperties.getUrilist()))
@@ -175,6 +182,8 @@ public class HtmlScanApplicationTests {
 			});
 			log.info("registration item: {}", item);
 			assertNotNull(item);
+			assertNull(item.form(htmlClosed));
+			log.info("rrrr: {}", item.form(htmlMultiForm));
 		});
 	}
 }
