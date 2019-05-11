@@ -52,12 +52,12 @@ public class ScanServiceImpl implements ScanService {
 
 		// Получаем html страницы со всеми событиями
 		htmlService.getHtml(htmlProperties.getUrilist()).thenAccept(htmlEvents -> {
-			if (htmlEvents == null) {
+			if (htmlEvents.isPresent()) {
 				// Ошибка при подключении к сайту вернёт строку null, выходим из обработки
 				return;
 			}
 
-			htmlService.getEvents(htmlEvents).thenAccept(map -> {
+			htmlService.getEvents(htmlEvents.get()).thenAccept(map -> {
 				// Проверяем, есть ли события с посольствами
 				map.entrySet().stream().filter(element -> element.getValue().getKey().contains(phraseEmb))
 						.forEach(embassy -> {
@@ -116,32 +116,34 @@ public class ScanServiceImpl implements ScanService {
 									(htmlProperties.getSites().contains(uri) || htmlProperties.getSites().isEmpty())) {
 									// Пробуем зарегистрироваться
 									htmlService.getHtml(uri).thenAccept(htmlReg -> {
-										if(htmlReg == null) {
+										if(htmlReg.isPresent()) {
 											log.error("html for uri={} is null!", uri);
 											return;
 										}
 
 										userProperties.getUsers().stream().forEach(user -> {
 											item.visitsInc();
-											val fields = user.form(htmlReg);
-											if(fields == null) {
+											val listFields = user.form(htmlReg.get());
+											if(listFields == null) {
 												log.warn("HTML does not contains form element!");
 												return;
 											}
 
-											htmlService.register(fields).thenAccept(response -> {
-												if (response == HttpStatus.OK) {
-													// Регистрация вернула ответ 200, отправляем уведомление на почту
-													log.info("You has registered on site {}", uri);
-													mailService.sendMessage("Successful registration",
-														String.format("You has registered on site %s!", uri), user.getEMAIL());
-													// Увеличиваем количество уведомлений на почту и меняем статус
-													item.sendedInc();
-													item.setState(SiteState.REGISTERED);
-												} else {
-													// Регистрация не удалась, выводим причину в лог
-													log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
-												}
+											listFields.stream().forEach(fields -> {
+												htmlService.register(fields).thenAccept(response -> {
+													if (response == HttpStatus.OK) {
+														// Регистрация вернула ответ 200, отправляем уведомление на почту
+														log.info("You has registered on site {}", uri);
+														mailService.sendMessage("Successful registration",
+																String.format("You has registered on site %s!", uri), user.getEMAIL());
+														// Увеличиваем количество уведомлений на почту и меняем статус
+														item.sendedInc();
+														item.setState(SiteState.REGISTERED);
+													} else {
+														// Регистрация не удалась, выводим причину в лог
+														log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
+													}
+												});
 											});
 										});
 								});

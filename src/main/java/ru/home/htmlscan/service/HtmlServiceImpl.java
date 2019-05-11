@@ -33,14 +33,15 @@ public class HtmlServiceImpl implements HtmlService {
     }
 
     @Async("htmlExecutor")
-    public CompletableFuture<String> getHtml(String url) {
+    public CompletableFuture<Optional<String>> getHtml(String url) {
+        Optional<String> html = Optional.empty();
         val response = restTemplate.getForEntity(url, String.class);
         if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
-            return CompletableFuture.completedFuture(response.getBody());
+            html = Optional.ofNullable(response.getBody());
         } else {
             log.error("Http code = {}, reason:", response.getStatusCodeValue(), response.getStatusCode().getReasonPhrase());
-            return CompletableFuture.completedFuture(null);
         }
+        return CompletableFuture.completedFuture(html);
     }
 
     @Async("htmlExecutor")

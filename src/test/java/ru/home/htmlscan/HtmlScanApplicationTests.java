@@ -30,10 +30,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -113,9 +110,9 @@ public class HtmlScanApplicationTests {
 				.thenReturn(CompletableFuture.completedFuture(htmlOpened));
 		 */
 		when(htmlMock.getHtml(url))
-				.thenReturn(CompletableFuture.completedFuture(htmlMultiForm));
+				.thenReturn(CompletableFuture.completedFuture(Optional.ofNullable(htmlMultiForm)));
 		when(htmlMock.getHtml(htmlProperties.getUrilist()))
-				.thenReturn(CompletableFuture.completedFuture(htmlList));
+				.thenReturn(CompletableFuture.completedFuture(Optional.ofNullable(htmlList)));
 		when(htmlMock.getEvents(htmlList))
 				.thenReturn(CompletableFuture.completedFuture(map));
 		when(htmlMock.register(anyMap()))
@@ -176,14 +173,16 @@ public class HtmlScanApplicationTests {
 		assertNotNull(userProperties.getUsers());
 
 		userProperties.getUsers().stream().forEach( item -> {
-			val fields = item.form(htmlOpened);
-			fields.entrySet().stream().forEach(e -> {
-					log.info("fields: {}={}", e.getKey(), e.getValue());
-			});
 			log.info("registration item: {}", item);
 			assertNotNull(item);
 			assertNull(item.form(htmlClosed));
 			assertNotNull(item.form(htmlMultiForm));
+			val listFields = item.form(htmlOpened);
+			assertNotNull(listFields);
+			listFields.stream().forEach(fields -> fields.entrySet().stream().forEach(e -> {
+					log.info("fields: {}={}", e.getKey(), e.getValue());
+				})
+			);
 		});
 	}
 }
