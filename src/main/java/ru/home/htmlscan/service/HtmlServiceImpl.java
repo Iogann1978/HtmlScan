@@ -36,7 +36,7 @@ public class HtmlServiceImpl implements HtmlService {
     public CompletableFuture<Optional<String>> getHtml(String url) {
         Optional<String> html = Optional.empty();
         val response = restTemplate.getForEntity(url, String.class);
-        if (response.getStatusCode() == HttpStatus.OK && response.hasBody()) {
+        if (response.getStatusCode() == HttpStatus.OK) {
             html = Optional.ofNullable(response.getBody());
         } else {
             log.error("Http code = {}, reason:", response.getStatusCodeValue(), response.getStatusCode().getReasonPhrase());

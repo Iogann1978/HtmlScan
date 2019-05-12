@@ -7,15 +7,15 @@ import lombok.Data;
 @Builder
 public class SiteItem {
     private SiteState state;
-    private int attemps, sended;
+    private int attempts, sent;
     private long visits;
 
-    public void attempsInc() {
-        attemps++;
+    public void attemptsInc() {
+        attempts++;
     }
 
-    public void sendedInc() {
-        sended++;
+    public void sentInc() {
+        sent++;
     }
 
     public void visitsInc() {

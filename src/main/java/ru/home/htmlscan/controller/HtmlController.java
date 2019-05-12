@@ -49,8 +49,8 @@ public class HtmlController {
     public List<String> getList() {
         return scanService.getRegister().entrySet().stream().
                 map(e -> "uri=" + e.getKey() + ", state=" + e.getValue().getState() +
-                ", attempts=" + e.getValue().getAttemps() +
-                ", sended=" + e.getValue().getSended() +
+                ", attempts=" + e.getValue().getAttempts() +
+                ", sended=" + e.getValue().getSent() +
                 ", visits=" + e.getValue().getVisits()).collect(Collectors.toList());
     }
 
@@ -79,7 +79,7 @@ public class HtmlController {
     @GetMapping("/events")
     public Map<String, Map.Entry<String, SiteState>> getEvents() {
         try {
-            val html = htmlService.getHtml(htmlProperties.getUrilist()).get();
+            val html = htmlService.getHtml(htmlProperties.getUrilist()).get().get();
             return htmlService.getEvents(html).get();
         } catch (InterruptedException | ExecutionException e) {
             log.error(e.getMessage());

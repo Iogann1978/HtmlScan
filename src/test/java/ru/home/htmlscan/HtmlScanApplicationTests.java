@@ -123,8 +123,8 @@ public class HtmlScanApplicationTests {
 		scanService.scanList();
 		verify(htmlMock).getHtml(url);
 		verify(htmlMock).getHtml(htmlProperties.getUrilist());
-		verify(htmlMock).register(anyMap());
-		verify(mailMock, times(2)).sendMessage(anyString(), anyString(), anyString());
+		verify(htmlMock, times(2)).register(anyMap());
+		verify(mailMock, times(3)).sendMessage(anyString(), anyString(), anyString());
 		assertEquals(1, scanService.getRegister().size());
 	}
 
@@ -134,20 +134,20 @@ public class HtmlScanApplicationTests {
 		String key = "http://test.ru";
 		val map = new ConcurrentHashMap<String, SiteItem>();
 		val item1 = SiteItem.builder()
-				.attemps(0)
-				.sended(0)
+				.attempts(0)
+				.sent(0)
 				.visits(0L)
 				.state(SiteState.REG_CLOSED)
 				.build();
 		map.put(key, item1);
 		val item2 = map.get(key);
-		item2.setAttemps(item2.getAttemps() + 1);
-		item2.setSended(item2.getSended() + 1);
-		item2.setVisits(item2.getVisits() + 1);
+		item2.attemptsInc();
+		item2.sentInc();
+		item2.visitsInc();
 		item2.setState(SiteState.REG_OPENED);
 		val item3 = map.get(key);
-		assertEquals(item2.getAttemps(), item3.getAttemps());
-		assertEquals(item2.getSended(), item3.getSended());
+		assertEquals(item2.getAttempts(), item3.getAttempts());
+		assertEquals(item2.getSent(), item3.getSent());
 		assertEquals(item2.getVisits(), item3.getVisits());
 		assertEquals(item2.getState(), item3.getState());
 		val item4 = map.computeIfAbsent(key, k -> null);
@@ -170,18 +170,20 @@ public class HtmlScanApplicationTests {
     @Test
 	public void parseTest() {
 		assertNotNull(htmlOpened);
+		assertNotNull(htmlClosed);
 		assertNotNull(userProperties.getUsers());
 
-		userProperties.getUsers().stream().forEach( item -> {
+		userProperties.getUsers().stream().forEach(item -> {
 			log.info("registration item: {}", item);
 			assertNotNull(item);
-			assertNull(item.form(htmlClosed));
-			assertNotNull(item.form(htmlMultiForm));
+			assertFalse(item.form(htmlClosed).isPresent());
+			assertTrue(item.form(htmlMultiForm).isPresent());
 			val listFields = item.form(htmlOpened);
-			assertNotNull(listFields);
-			listFields.stream().forEach(fields -> fields.entrySet().stream().forEach(e -> {
-					log.info("fields: {}={}", e.getKey(), e.getValue());
-				})
+			assertTrue(listFields.isPresent());
+			listFields.ifPresent(listFieldsPresent ->
+					listFieldsPresent.stream().forEach(fields -> fields.entrySet().stream().forEach(e ->
+						log.info("fields: {}={}", e.getKey(), e.getValue()))
+					)
 			);
 		});
 	}

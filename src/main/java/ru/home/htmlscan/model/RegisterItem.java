@@ -7,10 +7,7 @@ import org.jsoup.Jsoup;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 @ToString
@@ -21,10 +18,11 @@ public class RegisterItem {
     @NonNull
     private String FIO, PHONE, EMAIL;
 
-    public List<Map<String, String>> form(String html) {
+    public Optional<List<Map<String, String>>> form(String html) {
         val forms = Jsoup.parse(html).select("form");
-        if(forms == null) {
-            return null;
+        if(forms.size() == 0) {
+            log.warn("HTML does not contains form element!");
+            return Optional.empty();
         }
 
         val list = new ArrayList<Map<String, String>>();
@@ -63,7 +61,7 @@ public class RegisterItem {
                     });
             list.add(fields);
         });
-        return list;
+        return Optional.of(list);
     }
 
     public static String encodeField(String field) {
