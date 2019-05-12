@@ -18,12 +18,8 @@ public class RegisterItem {
     @NonNull
     private String FIO, PHONE, EMAIL;
 
-    public Optional<List<Map<String, String>>> form(String html) {
+    public List<Map<String, String>> form(String html) {
         val forms = Jsoup.parse(html).select("form");
-        if(forms.size() == 0) {
-            log.warn("HTML does not contains form element!");
-            return Optional.empty();
-        }
 
         val list = new ArrayList<Map<String, String>>();
         forms.stream().forEach(form -> {
@@ -61,7 +57,7 @@ public class RegisterItem {
                     });
             list.add(fields);
         });
-        return Optional.of(list);
+        return list;
     }
 
     public static String encodeField(String field) {

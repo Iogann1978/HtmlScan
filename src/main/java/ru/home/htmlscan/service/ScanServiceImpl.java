@@ -114,24 +114,22 @@ public class ScanServiceImpl implements ScanService {
 											userProperties.getUsers().stream().forEach(user -> {
 												item.visitsInc();
 												val listFields = user.form(htmlRegPresent);
-												listFields.ifPresent(listFieldsPresent ->
-													listFieldsPresent.stream().forEach(fields -> {
-														htmlService.register(fields).thenAccept(response -> {
-															if (response == HttpStatus.OK) {
-																// Регистрация вернула ответ 200, отправляем уведомление на почту
-																log.info("You has registered on site {}", uri);
-																mailService.sendMessage("Successful registration",
-																		String.format("You has registered on site %s!", uri), user.getEMAIL());
-																// Увеличиваем количество уведомлений на почту и меняем статус
-																item.sentInc();
-																item.setState(SiteState.REGISTERED);
-															} else {
-																// Регистрация не удалась, выводим причину в лог
-																log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
-															}
-														});
-													})
-												);
+												listFields.stream().forEach(fields -> {
+													htmlService.register(fields).thenAccept(response -> {
+														if (response == HttpStatus.OK) {
+															// Регистрация вернула ответ 200, отправляем уведомление на почту
+															log.info("You has registered on site {}", uri);
+															mailService.sendMessage("Successful registration",
+																	String.format("You has registered on site %s!", uri), user.getEMAIL());
+															// Увеличиваем количество уведомлений на почту и меняем статус
+															item.sentInc();
+															item.setState(SiteState.REGISTERED);
+														} else {
+															// Регистрация не удалась, выводим причину в лог
+															log.error("Registration status code={}, reason: {}", response, response.getReasonPhrase());
+														}
+													});
+												});
 											});
 										})
 									);

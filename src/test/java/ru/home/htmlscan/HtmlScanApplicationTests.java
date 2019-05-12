@@ -176,14 +176,12 @@ public class HtmlScanApplicationTests {
 		userProperties.getUsers().stream().forEach(item -> {
 			log.info("registration item: {}", item);
 			assertNotNull(item);
-			assertFalse(item.form(htmlClosed).isPresent());
-			assertTrue(item.form(htmlMultiForm).isPresent());
+			assertTrue(item.form(htmlClosed).isEmpty());
+			assertFalse(item.form(htmlMultiForm).isEmpty());
 			val listFields = item.form(htmlOpened);
-			assertTrue(listFields.isPresent());
-			listFields.ifPresent(listFieldsPresent ->
-					listFieldsPresent.stream().forEach(fields -> fields.entrySet().stream().forEach(e ->
-						log.info("fields: {}={}", e.getKey(), e.getValue()))
-					)
+			assertFalse(listFields.isEmpty());
+			listFields.stream().forEach(fields -> fields.entrySet().stream().forEach(e ->
+					log.info("fields: {}={}", e.getKey(), e.getValue()))
 			);
 		});
 	}

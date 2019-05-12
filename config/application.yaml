@@ -13,6 +13,7 @@ html:
    domain: https://dni-naslediya.ru
    urilist: https://dni-naslediya.ru/calendar/free/
    urireg: https://dni-naslediya.ru/calendar/cr2019.php
+   urireserv:  https://dni-naslediya.ru/calendar/reserve.php
 
 spring:
    mail:

@@ -50,17 +50,31 @@ public class HtmlServiceImpl implements HtmlService {
         headers.setAccept(ImmutableList.of(MediaType.APPLICATION_FORM_URLENCODED));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAcceptCharset(ImmutableList.of(StandardCharsets.UTF_8));
+
+        val params = new HashMap<String, String>();
+        params.put("ACTION", "set");
+        params.put("TIME_ID", fields.get("TIME_ID"));
+        val requestGet = new HttpEntity<>(headers);
+        val responseGet = restTemplate.exchange(htmlProperties.getUrireserv(), HttpMethod.GET,
+                requestGet, String.class, params);
+        if(responseGet.hasBody()) {
+            log.info("Reserve response: {}", responseGet.getBody());
+        }
+        if(responseGet.getStatusCode() != HttpStatus.OK) {
+            return CompletableFuture.completedFuture(responseGet.getStatusCode());
+        }
+
         val body = String.join("&", fields.entrySet().stream()
                 .map(field -> field.getKey() + "=" + field.getValue())
                 .collect(Collectors.toList()));
-        val request = new HttpEntity<>(body, headers);
+        val requestPost = new HttpEntity<>(body, headers);
         log.info("reg item: {}", fields);
-        val response = restTemplate.exchange(htmlProperties.getUrireg(), HttpMethod.POST,
-                request, String.class, fields);
-        if(response.hasBody()) {
-            log.info("Response: {}", response.getBody());
+        val responsePost = restTemplate.exchange(htmlProperties.getUrireg(), HttpMethod.POST,
+                requestPost, String.class, fields);
+        if(responsePost.hasBody()) {
+            log.info("Registration response: {}", responsePost.getBody());
         }
-        return CompletableFuture.completedFuture(response.getStatusCode());
+        return CompletableFuture.completedFuture(responsePost.getStatusCode());
     }
 
     @Async("htmlExecutor")
