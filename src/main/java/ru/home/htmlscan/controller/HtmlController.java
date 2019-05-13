@@ -89,8 +89,20 @@ public class HtmlController {
     }
 
     @PostMapping("/send_data")
-    public String sendData(@RequestParam("ADRES") String ADRES, @RequestParam("FIO") String FIO) {
-        log.info("ADRES: {}, FIO: {}", ADRES, FIO);
-        return FIO;
+    public String sendDataPost(@RequestParam Map<String,String> params, @RequestBody String body) {
+        val sb = new StringBuilder();
+        params.entrySet().stream().forEach(param -> sb.append(param.getKey() + "=" + param.getValue() + ";"));
+        log.info("params = {}", sb.toString());
+        log.info("BODY: {}", body);
+        sb.append("body=" + body);
+        return sb.toString();
+    }
+
+    @GetMapping("/send_data")
+    public String sendDataGet(@RequestParam Map<String,String> params) {
+        val sb = new StringBuilder();
+        params.entrySet().stream().forEach(param -> sb.append(param.getKey() + "=" + param.getValue() + ";"));
+        log.info("params = {}", sb.toString());
+        return sb.toString();
     }
 }
