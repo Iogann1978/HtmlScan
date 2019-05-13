@@ -4,80 +4,95 @@
         <script type="text/javascript"  src="jquery-3.4.1.min.js"></script>
     </head>
     <body>
-    <div id="check_in-18832" class="modal fade check_in__modal-dialog">
-        <div class="modal-dialog " role="document">
+    <div id="check_in-18687" class="modal fade check_in__modal-dialog show" style="display: block;">
+        <div class="modal-dialog modal-large" role="document">
             <div class="modal-content">
                 <div title="Закрыть" class="check_in__modal-dialog__close" data-dismiss="modal">Регистрация на событие</div>
                 <div class="check_in__modal__form">
 
-                    <div class="check_in__message check_in__form__rest-error" id="check_in__form__rest-error"></div>
-                    <div class="check_in__message check_in__form__error-reserve-exists" id="check_in__form__error-reserve-exists">Ошибка! Вы уже начали регистрацию на другое событие, нажав «ПРОДОЛЖИТЬ» начатые регистации в других окнах браузера будут прекращены.</div>
-                    <div class="check_in__message check_in__form__error-timer" id="check_in__form__error-timer">Время регистрации истекло, чтобы попробовать еще раз, закройте окно, и начните регистрацию заново.</div>
-                    <div class="check_in__message check_in__form__success" id="check_in__form__success">Вы успешно зарегистрировались. На указанный e-mail выслано уведомление о регистрации, распечатайте его и возьмите с собой на мероприятие.</div>
-                    <button class="check_in__button check_in__form__regto" id="check_in__form__regto">Зарегистрировать еще одного участника</button>
-                    <button class="check_in__button check_in__form__reg-repeat" id="check_in__form__reg-repeat">Начать регистрацию заново</button>
-                    <button class="check_in__button check_in__form__remove-reserve" id="check_in__form__remove-reserve">Продолжить</button>
+                    <div class="check_in__message check_in__form__rest-error" id="check_in__form__rest-error" style="display: none;"></div>
+                    <div class="check_in__message check_in__form__error-reserve-exists" id="check_in__form__error-reserve-exists" style="display: none;">Ошибка!
+                        Вы уже начали регистрацию на другое событие, нажав «ПРОДОЛЖИТЬ» начатые
+                        регистации в других окнах браузера будут прекращены.</div>
+                    <div class="check_in__message check_in__form__error-timer" id="check_in__form__error-timer" style="display: none;">Время регистрации истекло, чтобы попробовать еще раз, закройте окно, и начните регистрацию заново.</div>
+                    <div class="check_in__message check_in__form__success" id="check_in__form__success" style="display: none;">Вы
+                        успешно зарегистрировались. На указанный e-mail выслано уведомление о
+                        регистрации, распечатайте его и возьмите с собой на мероприятие.</div>
+                    <button class="check_in__button check_in__form__regto" id="check_in__form__regto" style="display: none;">Зарегистрировать еще одного участника</button>
+                    <button class="check_in__button check_in__form__reg-repeat" id="check_in__form__reg-repeat" style="display: none;">Начать регистрацию заново</button>
+                    <button class="check_in__button check_in__form__remove-reserve" id="check_in__form__remove-reserve" style="display: none;">Продолжить</button>
 
-                    <form id="form-registration-264">
+                    <form id="form-registration-178" style="">
 
-                        <input type="hidden" name="EVENT" value="Сретенский монастырь, XIX в.">
-                        <input type="hidden" name="EVENT_TYPE" value="Экскурсия по маршруту">
-                        <input type="hidden" name="TYPE_XML_ID" value="">
+                        <input type="hidden" name="EVENT" value="Городская усадьба Деминых, кон. XIX - нач. ХХ вв.">
+                        <input type="hidden" name="EVENT_TYPE" value="Экскурсия по объекту">
+                        <input type="hidden" name="TYPE_XML_ID" value="P">
                         <input type="hidden" name="MEET_PLACE" value="главный вход">
-                        <input type="hidden" name="ADRES" value="Ул. Большая Лубянка, д. 19">
+                        <input type="hidden" name="ADRES" value="Казакова ул., д. 23, стр. 1">
 
                         <input type="hidden" name="MONTH" value="05">
-                        <input type="hidden" name="DAY" value="22">
-                        <input type="hidden" name="TIME" value="12:00">
+                        <input type="hidden" name="DAY" value="18">
+                        <input type="hidden" name="TIME" value="13:00">
 
-                        <input type="hidden" name="TIME_ID" id="TIME_ID" value="18832">
-                        <input type="hidden" name="OBJECT_ID" value="264">
+                        <input type="hidden" name="TIME_ID" id="TIME_ID" value="18687">
+                        <input type="hidden" name="OBJECT_ID" value="178">
                         <div class="check_in__form__event-data">
                             <div class="check_in__form--h">
                                 <div class="check_in__form--type">Осталось времени</div>
-                                <div class="check_in__form--name reg-timer"></div>
+                                <div class="check_in__form--name reg-timer">4:49</div>
                             </div>
                             <div class="check_in__form--h">
                                 <div class="check_in__form--type">Событие</div>
-                                <div class="check_in__form--name">Экскурсия по маршруту</div>
+                                <div class="check_in__form--name">Экскурсия по объекту</div>
                             </div>
                             <div class="check_in__form--h">
                                 <div class="check_in__form--type">Название</div>
-                                <div class="check_in__form--name">Сретенский монастырь, XIX в.</div>
+                                <div class="check_in__form--name">Городская усадьба Деминых, кон. XIX - нач. ХХ вв.</div>
                             </div>
                             <div class="check_in__form--h">
                                 <div class="check_in__form--type">Дата</div>
-                                <div class="check_in__form--name">22 Мая | Вторник</div>
+                                <div class="check_in__form--name">18 Мая | Пятница</div>
                             </div>
                             <div class="check_in__form--h">
                                 <div class="check_in__form--type">Время начала</div>
-                                <div class="check_in__form--name">12:00</div>
+                                <div class="check_in__form--name">13:00</div>
                             </div>
                             <div class="check_in__form--h">
                                 <div class="check_in__form--type">Адрес</div>
-                                <div class="check_in__form--name">Ул. Большая Лубянка, д. 19</div>
+                                <div class="check_in__form--name">Казакова ул., д. 23, стр. 1</div>
                             </div>
                         </div>
                         <div class="check_in__form__error" id="check_in__form__error"></div>
-                        <input type="text" name="FIO" id="FIO" placeholder="ФИО" class="check_in__form_input check_in__form_input--first">
-                        <input type="text" name="PHONE" id="PHONE" placeholder="Телефон" class="check_in__form_input mask_phone">
-                        <input type="text" name="EMAIL" id="EMAIL" placeholder="E-mail" class="check_in__form_input">
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <input type="text" name="FIO" id="FIO" placeholder="ФИО" class="check_in__form_input check_in__form_input--first">
+                                <input type="text" name="PHONE" id="PHONE" placeholder="Телефон" class="check_in__form_input mask_phone">
+                                <input type="text" name="EMAIL" id="EMAIL" placeholder="E-mail" class="check_in__form_input">
+                                <input type="text" name="YEAR" id="YEAR" placeholder="Год рождения" class="check_in__form_input year">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <input type="text" name="PASSPORT_NUMBER" id="PASSPORT_NUMBER" placeholder="Серия и номер паспорта РФ" class="check_in__form_input passport_number">
+                                <input type="text" name="PASSPORT_GET" id="PASSPORT_GET" placeholder="Кем выдан" class="check_in__form_input">
+                                <input type="text" name="PASSPORT_DATE" id="PASSPORT_GET_DATE" placeholder="Дата выдачи" class="check_in__form_input get_date">
+                                <div class="check_in__form__pasport-attention">Внимание! В случае введения не правильных или не полных паспортных данных, в доступе на объект будет отказано.</div>
+                            </div>
+                        </div>
                         <div class="check_in__form__checkboxs">
                             <div class="check_in__form__checkbox">
-                                <input id="check_in-18832__form__checkbox-1" type="checkbox" class="CHECK_PP" value="1">
-                                <label class="check_in__form__checkbox__check" for="check_in-18832__form__checkbox-1"></label>
-                                <label class="check_in__form__checkbox__label" for="check_in-18832__form__checkbox-1">Отправляя данную форму, Вы подтверждаете <a href="/soglasie/" class="link">Соглашение об обработке персональных данных</a> и соглашаетесь с <a href="/politica/" class="link">Политикой конфиденциальности</a>.</label>
+                                <input id="check_in-18687__form__checkbox-1" type="checkbox" class="CHECK_PP" value="1">
+                                <label class="check_in__form__checkbox__check" for="check_in-18687__form__checkbox-1"></label>
+                                <label class="check_in__form__checkbox__label" for="check_in-18687__form__checkbox-1">Отправляя данную форму, Вы подтверждаете <a href="https://dni-naslediya.ru/soglasie/" class="link">Соглашение об обработке персональных данных</a> и соглашаетесь с <a href="https://dni-naslediya.ru/politica/" class="link">Политикой конфиденциальности</a>.</label>
                             </div>
                             <div class="check_in__form__checkbox">
-                                <input id="check_in-18832__form__checkbox-2" type="checkbox" class="CHECK_PRAVILA" value="1">
-                                <label class="check_in__form__checkbox__check" for="check_in-18832__form__checkbox-2"></label>
-                                <label class="check_in__form__checkbox__label" for="check_in-18832__form__checkbox-2">С <a href="/pravila/" class="link">правилами</a> проведения мероприятий ознакомлен.</label>
+                                <input id="check_in-18687__form__checkbox-2" type="checkbox" class="CHECK_PRAVILA" value="1">
+                                <label class="check_in__form__checkbox__check" for="check_in-18687__form__checkbox-2"></label>
+                                <label class="check_in__form__checkbox__label" for="check_in-18687__form__checkbox-2">С <a href="https://dni-naslediya.ru/pravila/" class="link">правилами</a> проведения мероприятий ознакомлен.</label>
                             </div>
                         </div>
                         <input type="hidden" class="g-recaptcha-response" name="g-recaptcha-response" value="">
                         <div class="check_in__form--btn">
                             <button type="button" class="check_in__form__input--btn" onclick="doRegister()">Зарегистрироваться</button>
-                            <button type="button" class="check_in__form__input--btn" onclick="setReserve()">Заререзервировать</button>
+                            <button type="button" class="check_in__form__input--btn" onclick="setReserve()">Зарезервировать</button>
                         </div>
                     </form>
                 </div>
@@ -88,7 +103,7 @@
         
         <script type="text/javascript" >
     function doRegister() {
-    var modalObj = $("#form-registration-264");
+    var modalObj = $("#form-registration-178");
         $("#object").text(modalObj.serialize());
 
          $.ajax({
@@ -106,7 +121,7 @@
     }
 
     function setReserve() {
-        var modalObj = $('#check_in-18832');
+        var modalObj = $('#check_in-18687');
 
         if (modalObj.find('#TIME_ID').val() != '') {
 

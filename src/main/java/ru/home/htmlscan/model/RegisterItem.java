@@ -14,7 +14,7 @@ import java.util.*;
 @NoArgsConstructor
 @Slf4j
 public class RegisterItem {
-    private String PASSPORT_NUMBER, PASSPORT_GET, PASSPORT_GET_DATE, YEAR;
+    private String PASSPORT_NUMBER, PASSPORT_GET, PASSPORT_DATE, YEAR;
     @NonNull
     private String FIO, PHONE, EMAIL;
 
@@ -44,8 +44,8 @@ public class RegisterItem {
                             case "PASSPORT_GET":
                                 fields.put(key, encodeField(PASSPORT_GET));
                                 break;
-                            case "PASSPORT_GET_DATE":
-                                fields.put(key, encodeField(PASSPORT_GET_DATE));
+                            case "PASSPORT_DATE":
+                                fields.put(key, encodeField(PASSPORT_DATE));
                                 break;
                             case "YEAR":
                                 fields.put(key, encodeField(YEAR));

@@ -20,6 +20,10 @@ registration:
          FIO: Корней Яшма
          PHONE: "+79164367895"
          EMAIL: kornej.yashma@gmail.com
+         PASSPORT_NUMBER: 1234567890
+         PASSPORT_GET: "УФМС ЗАО ЦАО"
+         PASSPORT_DATE: "01.02.2014"
+         YEAR: 1917
 
 html:
    domain: https://dni-naslediya.ru
