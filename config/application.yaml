@@ -4,10 +4,6 @@ registration:
         FIO: Козлов Антон Викторович
         PHONE: "+79099520361"
         EMAIL: iogann1978@gmail.com
-      -
-        FIO: Богданова Анна Валентиновна
-        PHONE: "+79057614573"
-        EMAIL: alma10@list.ru
 
 html:
    domain: https://dni-naslediya.ru

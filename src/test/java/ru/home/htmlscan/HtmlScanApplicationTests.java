@@ -67,7 +67,7 @@ public class HtmlScanApplicationTests {
 	@InjectMocks
 	private ScanServiceImpl scanService;
 
-	private String htmlOpened, htmlClosed, htmlList, htmlMultiForm;
+	private String htmlOpened, htmlClosed, htmlList, htmlMultiForm, serializedForm;
 
 	@Before
 	public void setUp() {
@@ -75,11 +75,13 @@ public class HtmlScanApplicationTests {
 		val siteClosed = resourceLoader.getResource("classpath:site_closed.html");
 		val siteList = resourceLoader.getResource("classpath:events_list.html");
 		val siteMultiForm = resourceLoader.getResource("classpath:site_multi_reg.html");
+		val siteSerialized = resourceLoader.getResource("classpath:form_serialized.txt");
 		try {
 			htmlOpened = new String(Files.readAllBytes(siteOpened.getFile().toPath()), StandardCharsets.UTF_8);
 			htmlClosed = new String(Files.readAllBytes(siteClosed.getFile().toPath()), StandardCharsets.UTF_8);
 			htmlList = new String(Files.readAllBytes(siteList.getFile().toPath()), StandardCharsets.UTF_8);
 			htmlMultiForm = new String(Files.readAllBytes(siteMultiForm.getFile().toPath()), StandardCharsets.UTF_8);
+			serializedForm = new String(Files.readAllBytes(siteSerialized.getFile().toPath()), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			e.printStackTrace();
@@ -90,9 +92,10 @@ public class HtmlScanApplicationTests {
 		when(testSender.createMimeMessage()).thenReturn(mimeMessage);
 	}
 
+	// Тест для сайта с одной формой регистрации
 	@Test
-	public void mainTest() {
-		val url = "https://dni-naslediya.ru/calendar/object/lektsiya-voprosy-sokhraneniya-promyshlennoy-arkhitektury-moskvy/";
+	public void singleFormTest() {
+		val url = "https://dni-naslediya.ru/calendar/object/gorodskaya-usadba-deminykh-kon-xix-nach-khkh-vv/";
 		val map = new HashMap<String, Map.Entry<String, SiteState>>() {
 			{
 				put(url, new AbstractMap.SimpleImmutableEntry<>("Test", SiteState.REG_OPENED));
@@ -105,10 +108,40 @@ public class HtmlScanApplicationTests {
 		when(htmlPropMock.getUrireg()).thenReturn(htmlProperties.getUrireg());
 		when(userPropMock.getUsers()).thenReturn(userProperties.getUsers());
 
-		/*
 		when(htmlMock.getHtml(url))
-				.thenReturn(CompletableFuture.completedFuture(htmlOpened));
-		 */
+				.thenReturn(CompletableFuture.completedFuture(Optional.ofNullable(htmlOpened)));
+		when(htmlMock.getHtml(htmlProperties.getUrilist()))
+				.thenReturn(CompletableFuture.completedFuture(Optional.ofNullable(htmlList)));
+		when(htmlMock.getEvents(htmlList))
+				.thenReturn(CompletableFuture.completedFuture(map));
+		when(htmlMock.register(anyMap()))
+				.thenReturn(CompletableFuture.completedFuture(HttpStatus.OK));
+
+		doNothing().when(mailMock).sendMessage(anyString(), anyString(), anyString());
+
+		scanService.scanList();
+		verify(htmlMock).getHtml(url);
+		verify(htmlMock).getHtml(htmlProperties.getUrilist());
+		verify(htmlMock).register(anyMap());
+		verify(mailMock, times(2)).sendMessage(anyString(), anyString(), anyString());
+		assertEquals(1, scanService.getRegister().size());
+	}
+
+	@Test
+	public void multiFormTest() {
+		val url = "https://dni-naslediya.ru/calendar/object/usadba-grachevka/";
+		val map = new HashMap<String, Map.Entry<String, SiteState>>() {
+			{
+				put(url, new AbstractMap.SimpleImmutableEntry<>("Test", SiteState.REG_OPENED));
+			}
+		};
+
+		when(htmlPropMock.getDomain()).thenReturn(htmlProperties.getDomain());
+		when(htmlPropMock.getSites()).thenReturn(htmlProperties.getSites());
+		when(htmlPropMock.getUrilist()).thenReturn(htmlProperties.getUrilist());
+		when(htmlPropMock.getUrireg()).thenReturn(htmlProperties.getUrireg());
+		when(userPropMock.getUsers()).thenReturn(userProperties.getUsers());
+
 		when(htmlMock.getHtml(url))
 				.thenReturn(CompletableFuture.completedFuture(Optional.ofNullable(htmlMultiForm)));
 		when(htmlMock.getHtml(htmlProperties.getUrilist()))
@@ -171,6 +204,7 @@ public class HtmlScanApplicationTests {
 	public void parseTest() {
 		assertNotNull(htmlOpened);
 		assertNotNull(htmlClosed);
+		assertNotNull(serializedForm);
 		assertNotNull(userProperties.getUsers());
 
 		userProperties.getUsers().stream().forEach(item -> {
@@ -180,9 +214,22 @@ public class HtmlScanApplicationTests {
 			assertFalse(item.form(htmlMultiForm).isEmpty());
 			val listFields = item.form(htmlOpened);
 			assertFalse(listFields.isEmpty());
-			listFields.stream().forEach(fields -> fields.entrySet().stream().forEach(e ->
-					log.info("fields: {}={}", e.getKey(), e.getValue()))
+			val mapSerialized = new HashMap<String, String>();
+			Arrays.asList(serializedForm.split("&")).stream().forEach(field -> {
+				val arr = field.split("=");
+				if(arr != null && arr.length == 2) {
+					mapSerialized.put(arr[0], arr[1]);
+				} else {
+					log.warn("arr size more than 2: {}", arr);
+					mapSerialized.put(arr[0], "");
+				}
+			});
+			listFields.stream().forEach(fields -> fields.entrySet().stream().forEach(e -> {
+						log.info("fields: {}={}={}", e.getKey(), e.getValue(), mapSerialized.get(e.getKey()));
+						assertTrue(mapSerialized.containsKey(e.getKey()));
+						assertEquals(e.getValue(), mapSerialized.get(e.getKey()));
+					})
 			);
 		});
-	}
+	};
 }

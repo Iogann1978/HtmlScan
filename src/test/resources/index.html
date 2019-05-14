@@ -102,81 +102,81 @@
         <p id="object"></p>
         
         <script type="text/javascript" >
-    function doRegister() {
-    var modalObj = $("#form-registration-178");
-        $("#object").text(modalObj.serialize());
+            function doRegister() {
+            var modalObj = $("#form-registration-178");
+                $("#object").text(modalObj.serialize());
 
-         $.ajax({
-                url: "http://localhost:8080/htmlscan/send_data",
-                data: modalObj.serialize(),
-                type: "POST",
-                dataType: 'json',
-                success: function(data) {
-                    alert(JSON.stringify(data));
-                },
-                error: function(jqXHR, textStatus, errorThrown){
-                    alert(textStatus);
-                }
-        });
-    }
+                 $.ajax({
+                        url: "http://localhost:8080/htmlscan/send_data",
+                        data: modalObj.serialize(),
+                        type: "POST",
+                        dataType: 'json',
+                        success: function(data) {
+                            alert(JSON.stringify(data));
+                        },
+                        error: function(jqXHR, textStatus, errorThrown){
+                            alert(JSON.stringify(jqXHR));
+                        }
+                });
+            }
 
-    function setReserve() {
-        var modalObj = $('#check_in-18687');
+            function setReserve() {
+                var modalObj = $('#check_in-18687');
 
-        if (modalObj.find('#TIME_ID').val() != '') {
+                if (modalObj.find('#TIME_ID').val() != '') {
 
-            $.ajax({
-                url: "http://localhost:8080/htmlscan/send_data?ACTION=set&TIME_ID=" + modalObj.find('#TIME_ID').val(),
-                type: "GET",
-                dataType: 'json',
-                async: false,
-                modalObj: modalObj,
-                success: function (data) {
+                    $.ajax({
+                        url: "http://localhost:8080/htmlscan/send_data?ACTION=set&TIME_ID=" + modalObj.find('#TIME_ID').val(),
+                        type: "GET",
+                        dataType: 'json',
+                        async: false,
+                        modalObj: modalObj,
+                        success: function (data) {
 
-                    if (data.ERROR_PLACES != "Y") {
+                            if (data.ERROR_PLACES != "Y") {
 
 
-                        //console.log(data);
-                        if (data.ERROR_EXISTS != 'Y') {
+                                //console.log(data);
+                                if (data.ERROR_EXISTS != 'Y') {
 
-                            windowHasReserve = true;
+                                    windowHasReserve = true;
 
-                            modalObj.find('form').show();
-                            modalObj.find('.check_in__message').hide();
-                            modalObj.find('.check_in__button').hide();
+                                    modalObj.find('form').show();
+                                    modalObj.find('.check_in__message').hide();
+                                    modalObj.find('.check_in__button').hide();
 
-                            timerStart()
-                            reserveTimeOut = setTimeout(TimesOver, 300000);
+                                    timerStart()
+                                    reserveTimeOut = setTimeout(TimesOver, 300000);
+
+                                }
+                                else {
+                                    windowHasReserve = false;
+
+                                    timerStop();
+
+                                    modalObj.find('form').hide();
+                                    modalObj.find('.check_in__message').hide();
+                                    modalObj.find('.check_in__button').hide();
+                                    modalObj.find('.check_in__form__error-reserve-exists').show();
+                                    modalObj.find('.check_in__form__remove-reserve').show();
+
+
+                                    modalObj.find('#check_in__form__remove-reserve').unbind();
+                                    modalObj.find('#check_in__form__remove-reserve').click(function (event) {
+                                        ReInitBodyModal();
+                                        localStorage.setItem('closewindow', 1);
+                                    });
+                                }
+                            }
+                            else {
+                                modalObj.find('#check_in__form__rest-error').show().html('Нет свободных мест. Последнее место было забронировано, несколько секунд назад.<br><br>Попробуйте зарегистрироваться чуть позже, возможно кто-то отменит регистрацию, и у Вас будет шанс.');
+                                modalObj.find('form').hide();
+                            }
 
                         }
-                        else {
-                            windowHasReserve = false;
-
-                            timerStop();
-
-                            modalObj.find('form').hide();
-                            modalObj.find('.check_in__message').hide();
-                            modalObj.find('.check_in__button').hide();
-                            modalObj.find('.check_in__form__error-reserve-exists').show();
-                            modalObj.find('.check_in__form__remove-reserve').show();
-
-
-                            modalObj.find('#check_in__form__remove-reserve').unbind();
-                            modalObj.find('#check_in__form__remove-reserve').click(function (event) {
-                                ReInitBodyModal();
-                                localStorage.setItem('closewindow', 1);
-                            });
-                        }
-                    }
-                    else {
-                        modalObj.find('#check_in__form__rest-error').show().html('Нет свободных мест. Последнее место было забронировано, несколько секунд назад.<br><br>Попробуйте зарегистрироваться чуть позже, возможно кто-то отменит регистрацию, и у Вас будет шанс.');
-                        modalObj.find('form').hide();
-                    }
-
+                    });
                 }
-            });
-        }
-    }
+            }
         </script>
     </body>
 </html>

@@ -63,7 +63,7 @@ public class RegisterItem {
     public static String encodeField(String field) {
         String encoded = "";
         try {
-            encoded = URLEncoder.encode(field, StandardCharsets.UTF_8.name());
+            encoded = URLEncoder.encode(field, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20");
         } catch (UnsupportedEncodingException e) {
             log.error(e.getMessage());
             e.printStackTrace();
