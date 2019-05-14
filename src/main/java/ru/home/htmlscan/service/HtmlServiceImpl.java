@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.home.htmlscan.config.HtmlProperties;
+import ru.home.htmlscan.model.ResponseStatus;
 import ru.home.htmlscan.model.SiteState;
 
 import java.nio.charset.StandardCharsets;
@@ -46,23 +47,16 @@ public class HtmlServiceImpl implements HtmlService {
 
     @Async("htmlExecutor")
     public CompletableFuture<HttpStatus> register(Map<String, String> fields) {
+        String timeId = fields.get("TIME_ID");
+        HttpStatus responseGet = actionReserve("set", timeId);
+        if(responseGet != HttpStatus.OK) {
+            return CompletableFuture.completedFuture(responseGet);
+        }
+
         val headers = new HttpHeaders();
         headers.setAccept(ImmutableList.of(MediaType.APPLICATION_FORM_URLENCODED));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setAcceptCharset(ImmutableList.of(StandardCharsets.UTF_8));
-
-        val params = new HashMap<String, String>();
-        params.put("ACTION", "set");
-        params.put("TIME_ID", fields.get("TIME_ID"));
-        val requestGet = new HttpEntity<>(headers);
-        val responseGet = restTemplate.exchange(htmlProperties.getUrireserv(), HttpMethod.GET,
-                requestGet, String.class, params);
-        if(responseGet.hasBody()) {
-            log.info("Reserve response: {}", responseGet.getBody());
-        }
-        if(responseGet.getStatusCode() != HttpStatus.OK) {
-            return CompletableFuture.completedFuture(responseGet.getStatusCode());
-        }
 
         val body = String.join("&", fields.entrySet().stream()
                 .map(field -> field.getKey() + "=" + field.getValue())
@@ -74,7 +68,34 @@ public class HtmlServiceImpl implements HtmlService {
         if(responsePost.hasBody()) {
             log.info("Registration response: {}", responsePost.getBody());
         }
+
+        responseGet = actionReserve("remove", timeId);
+        if(responseGet != HttpStatus.OK) {
+            return CompletableFuture.completedFuture(responseGet);
+        }
+
         return CompletableFuture.completedFuture(responsePost.getStatusCode());
+    }
+
+    private HttpStatus actionReserve(String action, String timeId) {
+        val headers = new HttpHeaders();
+        headers.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON_UTF8));
+        headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        headers.setAcceptCharset(ImmutableList.of(StandardCharsets.UTF_8));
+
+        val params = new HashMap<String, String>();
+        params.put("ACTION", action);
+        params.put("TIME_ID", timeId);
+        val request = new HttpEntity<>(headers);
+        val response = restTemplate.exchange(htmlProperties.getUrireserv(), HttpMethod.GET,
+                request, String.class, params);
+        if(response.hasBody()) {
+            log.info("Reserve {} response: {}", action, response.getBody());
+        }
+        if(response.getStatusCode() != HttpStatus.OK) {
+            log.warn("{}", response.getStatusCode().getReasonPhrase());
+        }
+        return response.getStatusCode();
     }
 
     @Async("htmlExecutor")

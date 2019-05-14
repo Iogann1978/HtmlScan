@@ -1,7 +1,6 @@
 package ru.home.htmlscan.config;
 
 import lombok.val;
-import org.jsoup.Jsoup;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;

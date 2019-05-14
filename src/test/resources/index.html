@@ -103,7 +103,7 @@
         
         <script type="text/javascript" >
             function doRegister() {
-            var modalObj = $("#form-registration-178");
+                var modalObj = $("#form-registration-178");
                 $("#object").text(modalObj.serialize());
 
                  $.ajax({
@@ -121,8 +121,8 @@
             }
 
             function setReserve() {
-                var modalObj = $('#check_in-18687');
-
+                var modalObj = $("#check_in-18687");
+                $("#object").text(modalObj.serialize());
                 if (modalObj.find('#TIME_ID').val() != '') {
 
                     $.ajax({

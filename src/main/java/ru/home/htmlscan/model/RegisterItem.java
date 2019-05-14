@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 
+import javax.validation.constraints.*;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -14,9 +15,15 @@ import java.util.*;
 @NoArgsConstructor
 @Slf4j
 public class RegisterItem {
-    private String PASSPORT_NUMBER, PASSPORT_GET, PASSPORT_DATE, YEAR;
-    @NonNull
-    private String FIO, PHONE, EMAIL;
+    @NotNull
+    private String PASSPORT_NUMBER, PASSPORT_GET, PASSPORT_DATE;
+    @Max(2019)
+    @Min(1900)
+    private int YEAR;
+    @NotNull
+    private String FIO, PHONE;
+    @Email
+    private String EMAIL;
 
     public List<Map<String, String>> form(String html) {
         val forms = Jsoup.parse(html).select("form");
@@ -48,7 +55,7 @@ public class RegisterItem {
                                 fields.put(key, encodeField(PASSPORT_DATE));
                                 break;
                             case "YEAR":
-                                fields.put(key, encodeField(YEAR));
+                                fields.put(key, encodeField(String.valueOf(YEAR)));
                                 break;
                             default:
                                 fields.put(key, encodeField(element_filtered.attr("value")));
